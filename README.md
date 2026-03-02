@@ -102,9 +102,26 @@ ashoka/
 
 ## 🎨 UI Theme
 
-- **Primary Color**: Skinish Brown (#78350f, #92400e)
-- **Background**: Cream/Beige gradients (#fff8f0, #f5e6d3)
-- **Accents**: Amber for warnings, Red for errors, Green for success
+### Light Mode
+- **Primary Color**: Teal/Turquoise (#2d8a84, #176a66)
+- **Background**: Warm Beige/Cream (#ded5c4, #efeeeb)
+- **Card Background**: Off-white (#f8f6f2)
+- **Text**: Dark Teal (#102d32, #4e6b71)
+- **Accent**: Teal (#2d8a84) and Soft Blue (#5b93c9)
+
+### Dark Mode
+- **Primary Color**: Teal (#1f7d78, #145f5b)
+- **Background**: Dark Teal/Gray (#102124, #173037)
+- **Card Background**: Dark Teal (#1c3438)
+- **Text**: Light Cyan (#e7f3f4, #b5cfd1)
+- **Accent**: Light Teal (#70b8b2) and Light Blue (#7caede)
+
+### Status Colors
+- **Success**: Green
+- **Warning**: Orange/Amber
+- **Error**: Red
+- **Info**: Blue
+
 
 ## 📝 Environment Variables
 
@@ -135,7 +152,7 @@ All data is stored in `data/ashoka.duckdb`:
 
 ## 📄 License
 
-Built for AWS Hackathon 2024
+Built for AWS Hackathon 2026
 
 ## 🤝 Support
 
