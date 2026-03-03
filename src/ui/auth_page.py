@@ -730,32 +730,36 @@ class AuthPage:
     # MAIN PAGE
     # =========================
 
-    def _set_story_panel(self, mode: str):
+    def _update_story_panel(self, mode: str):
+        """Update story panel content and recreate button with proper handler"""
         if mode == "signup":
-            self.story_button.set_visibility(True)
             self.story_eyebrow.set_text("Ashoka")
             self.story_title.set_text("Already have an account?")
             self.story_text.set_text(
                 "Sign in to continue managing your GenAI governance and observability workflows."
             )
-            self.story_button.set_text("Sign In")
-            self.story_button.on_click(self._create_login_form)
+            # Recreate button with new handler
+            self.story_button_container.clear()
+            with self.story_button_container:
+                self.story_button = ui.button("Sign In", on_click=self._create_login_form).props("no-caps").classes("btn-outline w-48")
         elif mode == "otp":
-            self.story_button.set_visibility(False)
             self.story_eyebrow.set_text("Ashoka")
             self.story_title.set_text("Complete verification")
             self.story_text.set_text(
                 "Use the one-time code to finish secure access to your workspace."
             )
-        else:
-            self.story_button.set_visibility(True)
+            # Hide button for OTP mode
+            self.story_button_container.clear()
+        else:  # login mode
             self.story_eyebrow.set_text("Ashoka")
             self.story_title.set_text("New here?")
             self.story_text.set_text(
                 "Create your account to access Ashoka's GenAI governance and observability platform."
             )
-            self.story_button.set_text("Sign Up")
-            self.story_button.on_click(self._show_signup_form)
+            # Recreate button with new handler
+            self.story_button_container.clear()
+            with self.story_button_container:
+                self.story_button = ui.button("Sign Up", on_click=self._show_signup_form).props("no-caps").classes("btn-outline w-48")
 
     def create_auth_page(self):
 
@@ -1088,7 +1092,10 @@ class AuthPage:
                     self.story_eyebrow = ui.label().classes("story-eyebrow")
                     self.story_title = ui.label().classes("cta-title")
                     self.story_text = ui.label().classes("cta-text")
-                    self.story_button = ui.button().props("no-caps").classes("btn-outline w-48")
+                    # Create button container for dynamic recreation
+                    self.story_button_container = ui.column().classes("w-full")
+                    with self.story_button_container:
+                        self.story_button = ui.button(on_click=self._show_signup_form).props("no-caps").classes("btn-outline w-48")
 
             with ui.element("div").classes("panel-auth"):
                 self.card = ui.column().classes("form-container form-stack")
@@ -1103,7 +1110,7 @@ class AuthPage:
         self.card.clear()
 
         with self.card:
-            self._set_story_panel("login")
+            self._update_story_panel("login")
             ui.label("Ashoka").classes("brand")
             ui.label("Login to Your Account").classes("title")
             ui.label("Secure access to your governance dashboard").classes("subtitle")
@@ -1143,7 +1150,7 @@ class AuthPage:
         self.card.clear()
 
         with self.card:
-            self._set_story_panel("signup")
+            self._update_story_panel("signup")
             ui.label("Ashoka").classes("brand")
             ui.label("Create Account").classes("title")
             ui.label("Sign up to get started").classes("subtitle")
@@ -1185,7 +1192,7 @@ class AuthPage:
         self.card.clear()
 
         with self.card:
-            self._set_story_panel("otp")
+            self._update_story_panel("otp")
             ui.label("Ashoka").classes("brand")
             ui.label("Enter OTP").classes("title")
             ui.label("Check the code sent to you").classes("subtitle")

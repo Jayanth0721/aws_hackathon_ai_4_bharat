@@ -113,7 +113,6 @@ if __name__ == "__main__":
     
     ui.run(
         title='Ashoka - GenAI Governance Platform',
-        favicon='🛡️',
         dark=False,
         reload=False,
         host='0.0.0.0',
