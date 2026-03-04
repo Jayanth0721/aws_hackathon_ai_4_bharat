@@ -1,9 +1,0 @@
-This is a test document for the Ashoka GenAI Governance Platform.
-
-The platform provides comprehensive content analysis including:
-- Sentiment analysis
-- Keyword extraction
-- Quality scoring
-- Risk assessment
-
-This test will verify that document processing and AI analysis are working correctly.
