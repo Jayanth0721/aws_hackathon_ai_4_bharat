@@ -5,6 +5,8 @@ from pathlib import Path
 import base64
 
 from src.utils.logging import logger
+from src.services.media_processor import media_processor
+from src.services.document_processor import document_processor
 
 
 class FileProcessor:
@@ -13,6 +15,8 @@ class FileProcessor:
     def __init__(self):
         self.upload_dir = Path("data/uploads")
         self.upload_dir.mkdir(parents=True, exist_ok=True)
+        self.media_processor = media_processor
+        self.document_processor = document_processor
     
     def process_image(self, file_content: bytes, filename: str) -> Tuple[str, str]:
         """
@@ -42,9 +46,54 @@ class FileProcessor:
             logger.error(f"Error processing image: {e}")
             raise
     
+    def process_audio(self, file_content: bytes, filename: str) -> Tuple[str, str, dict]:
+        """
+        Process uploaded audio and extract transcription using Whisper
+        
+        Args:
+            file_content: Audio file bytes
+            filename: Original filename
+            
+        Returns:
+            Tuple of (transcription, file_path, metadata)
+        """
+        try:
+            # Save file
+            file_path = self.upload_dir / filename
+            with open(file_path, 'wb') as f:
+                f.write(file_content)
+            
+            logger.info(f"Audio saved: {filename}")
+            
+            # Extract transcription using Whisper
+            result = self.media_processor.process_audio(str(file_path))
+            
+            if result["success"]:
+                transcription = result["transcript"]
+                metadata = {
+                    'language': result.get('language', 'unknown'),
+                    'processor': 'Whisper (local)',
+                    'file_type': 'audio'
+                }
+            else:
+                # Fallback to mock if Whisper fails
+                logger.warning(f"Whisper processing failed: {result.get('error')}. Using mock data.")
+                transcription = "Audio transcription not available. Please install Whisper: pip install openai-whisper"
+                metadata = {
+                    'language': 'unknown',
+                    'processor': 'Mock',
+                    'file_type': 'audio'
+                }
+            
+            return transcription, str(file_path), metadata
+            
+        except Exception as e:
+            logger.error(f"Error processing audio: {e}")
+            raise
+    
     def process_video(self, file_content: bytes, filename: str) -> Tuple[str, str, dict]:
         """
-        Process uploaded video and extract transcription
+        Process uploaded video and extract transcription using Whisper
         
         Args:
             file_content: Video file bytes
@@ -61,11 +110,21 @@ class FileProcessor:
             
             logger.info(f"Video saved: {filename}")
             
-            # Extract transcription (mock for now)
-            transcription = self._extract_video_transcription_mock(filename)
+            # Extract transcription using Whisper
+            result = self.media_processor.process_video(str(file_path))
             
-            # Get video metadata
-            metadata = self._get_video_metadata_mock(filename)
+            if result["success"]:
+                transcription = result["transcript"]
+                metadata = {
+                    'duration': result.get('duration', 'Unknown'),
+                    'language': result.get('language', 'unknown'),
+                    'processor': 'Whisper (local)'
+                }
+            else:
+                # Fallback to mock if Whisper fails
+                logger.warning(f"Whisper processing failed: {result.get('error')}. Using mock data.")
+                transcription = self._extract_video_transcription_mock(filename)
+                metadata = self._get_video_metadata_mock(filename)
             
             return transcription, str(file_path), metadata
             
@@ -75,7 +134,7 @@ class FileProcessor:
     
     def process_document(self, file_content: bytes, filename: str) -> Tuple[str, str, dict]:
         """
-        Process uploaded document and extract text
+        Process uploaded document and extract text using real processors
         
         Args:
             file_content: Document file bytes
@@ -95,18 +154,38 @@ class FileProcessor:
             # Extract text based on file type
             extension = Path(filename).suffix.lower()
             
-            if extension == '.txt' or extension == '.md':
+            if extension in ['.txt', '.md']:
                 # Plain text files - read directly
                 extracted_text = file_content.decode('utf-8', errors='ignore')
-            elif extension == '.pdf':
-                extracted_text = self._extract_text_from_pdf_mock(filename)
-            elif extension == '.docx':
-                extracted_text = self._extract_text_from_docx_mock(filename)
+                metadata = {
+                    'line_count': extracted_text.count('\n') + 1,
+                    'char_count': len(extracted_text),
+                    'file_type': 'txt',
+                    'processor': 'Direct read'
+                }
             else:
-                extracted_text = "Unsupported document format."
-            
-            # Get document metadata
-            metadata = self._get_document_metadata(file_path, extension)
+                # Use document processor for PDF/DOCX
+                result = self.document_processor.process_document(str(file_path), extension)
+                
+                if result["success"]:
+                    extracted_text = result["text"]
+                    metadata = {
+                        'page_count': result.get('page_count', result.get('paragraph_count', 0)),
+                        'char_count': result.get('char_count', len(extracted_text)),
+                        'file_type': result.get('file_type', extension.replace('.', '')),
+                        'processor': 'pdfplumber' if extension == '.pdf' else 'python-docx'
+                    }
+                else:
+                    # Fallback to mock if processing fails
+                    logger.warning(f"Document processing failed: {result.get('error')}. Using mock data.")
+                    if extension == '.pdf':
+                        extracted_text = self._extract_text_from_pdf_mock(filename)
+                    elif extension == '.docx':
+                        extracted_text = self._extract_text_from_docx_mock(filename)
+                    else:
+                        extracted_text = "Unsupported document format."
+                    
+                    metadata = self._get_document_metadata(file_path, extension)
             
             return extracted_text, str(file_path), metadata
             

@@ -200,6 +200,20 @@ class DuckDBSchema:
             )
         """)
         
+        # Content Restrictions Table - stores admin-defined content restrictions
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS content_restrictions (
+                restriction_id VARCHAR PRIMARY KEY,
+                restriction_text TEXT NOT NULL,
+                restriction_type VARCHAR DEFAULT 'keyword',
+                is_active BOOLEAN DEFAULT TRUE,
+                created_by VARCHAR,
+                created_at TIMESTAMP NOT NULL,
+                updated_at TIMESTAMP,
+                description TEXT
+            )
+        """)
+        
         # Sessions Table - stores user sessions
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS ashoka_sessions (

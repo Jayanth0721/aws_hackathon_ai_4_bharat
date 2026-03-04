@@ -7250,7 +7250,7 @@ class AshokaGovDashboard:
         # Note: These will only refresh if the respective panels have been created
         # Refresh intervals are configurable
         
-        # Refresh monitoring metrics every 60 seconds
+        # Refresh monitoring metrics every 10 minutes (600 seconds)
         def refresh_monitoring():
             try:
                 if hasattr(self, 'quality_metrics_container'):
@@ -7258,9 +7258,9 @@ class AshokaGovDashboard:
             except Exception as e:
                 logger.error(f"Auto-refresh monitoring error: {e}")
         
-        ui.timer(60.0, refresh_monitoring)
+        ui.timer(600.0, refresh_monitoring)
         
-        # Refresh alerts every 90 seconds
+        # Refresh alerts every 10 minutes (600 seconds)
         def refresh_alerts():
             try:
                 if hasattr(self, 'alerts_container'):
@@ -7268,9 +7268,9 @@ class AshokaGovDashboard:
             except Exception as e:
                 logger.error(f"Auto-refresh alerts error: {e}")
         
-        ui.timer(90.0, refresh_alerts)
+        ui.timer(600.0, refresh_alerts)
         
-        # Refresh security logs every 120 seconds
+        # Refresh security logs every 10 minutes (600 seconds)
         def refresh_security():
             try:
                 if hasattr(self, 'security_metrics_container'):
@@ -7278,9 +7278,9 @@ class AshokaGovDashboard:
             except Exception as e:
                 logger.error(f"Auto-refresh security error: {e}")
         
-        ui.timer(120.0, refresh_security)
+        ui.timer(600.0, refresh_security)
         
-        logger.info("Auto-refresh timers started: Monitoring (60s), Alerts (90s), Security (120s)")
+        logger.info("Auto-refresh timers started: Monitoring (10min), Alerts (10min), Security (10min)")
     
     def _pause_current_operation(self):
         """Pause current content operation when timer is low"""
@@ -8631,9 +8631,40 @@ class AshokaGovDashboard:
                         with ui.row().classes('items-start gap-2'):
                             ui.icon('check_circle').classes('text-blue-600 text-sm mt-1')
                             ui.label(rec).classes('text-sm text-gray-700')
+            
+            # Content Restrictions Section (Admin Only)
+            with ui.card().classes('w-full bg-red-50 mt-4'):
+                with ui.row().classes('items-center gap-2 mb-3'):
+                    ui.icon('block', size='md').classes('text-red-600')
+                    ui.label('AI Content Generation Restrictions').classes('text-xl font-semibold')
+                    ui.badge('Admin Only', color='red').classes('ml-2')
+                
+                ui.label('Define keywords or phrases that should block AI content generation').classes('text-sm text-gray-600 mb-3')
+                
+                # Add new restriction
+                with ui.row().classes('w-full gap-2 mb-4'):
+                    self.restriction_input = ui.input(
+                        label='Restriction Keyword/Phrase',
+                        placeholder='e.g., violence, hate speech, illegal activities'
+                    ).classes('flex-1')
+                    
+                    self.restriction_desc_input = ui.input(
+                        label='Description (optional)',
+                        placeholder='Why this is restricted'
+                    ).classes('flex-1')
+                    
+                    ui.button(
+                        'Add Restriction',
+                        icon='add_circle',
+                        on_click=self._add_content_restriction
+                    ).props('color=red')
+                
+                # Active restrictions list
+                self.restrictions_container = ui.column().classes('w-full gap-2')
         
         # Load initial data
         self._refresh_security_logs()
+        self._load_content_restrictions()
     
     def _refresh_security_logs(self):
         """Refresh security logs with real data from DuckDB"""
@@ -8794,6 +8825,173 @@ class AshokaGovDashboard:
             logger.error(f"Error refreshing security logs: {e}")
             ui.notify(f'Failed to refresh security logs: {str(e)}', type='negative')
     
+    def _add_content_restriction(self):
+        """Add a new content restriction (Admin only)"""
+        from datetime import datetime
+        from src.utils.id_generator import generate_id
+        
+        restriction_text = self.restriction_input.value
+        description = self.restriction_desc_input.value
+        
+        if not restriction_text or not restriction_text.strip():
+            ui.notify('Please enter a restriction keyword or phrase', type='warning')
+            return
+        
+        try:
+            restriction_id = generate_id('restriction')
+            username = app.storage.general.get('username', 'admin')
+            
+            db_schema.conn.execute("""
+                INSERT INTO content_restrictions 
+                (restriction_id, restriction_text, restriction_type, is_active, 
+                 created_by, created_at, description)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, [
+                restriction_id,
+                restriction_text.strip().lower(),
+                'keyword',
+                True,
+                username,
+                datetime.now(),
+                description.strip() if description else None
+            ])
+            
+            # Clear inputs
+            self.restriction_input.value = ''
+            self.restriction_desc_input.value = ''
+            
+            # Reload restrictions
+            self._load_content_restrictions()
+            
+            ui.notify(f'Restriction added: {restriction_text}', type='positive')
+            logger.info(f"Content restriction added by {username}: {restriction_text}")
+            
+        except Exception as e:
+            logger.error(f"Error adding content restriction: {e}")
+            ui.notify(f'Failed to add restriction: {str(e)}', type='negative')
+    
+    def _load_content_restrictions(self):
+        """Load and display active content restrictions"""
+        try:
+            restrictions = db_schema.conn.execute("""
+                SELECT restriction_id, restriction_text, description, 
+                       created_by, created_at, is_active
+                FROM content_restrictions
+                ORDER BY created_at DESC
+            """).fetchall()
+            
+            self.restrictions_container.clear()
+            with self.restrictions_container:
+                if not restrictions:
+                    ui.label('No content restrictions defined yet').classes('text-gray-500 text-sm italic')
+                else:
+                    ui.label(f'Active Restrictions ({len(restrictions)})').classes('font-semibold text-sm mb-2')
+                    
+                    for restriction_id, text, desc, created_by, created_at, is_active in restrictions:
+                        with ui.card().classes('w-full p-3 border-l-4 border-red-500'):
+                            with ui.row().classes('w-full items-center justify-between'):
+                                with ui.column().classes('flex-1'):
+                                    with ui.row().classes('items-center gap-2'):
+                                        ui.icon('block').classes('text-red-600')
+                                        ui.label(text).classes('font-semibold text-red-700')
+                                        if is_active:
+                                            ui.badge('Active', color='red')
+                                        else:
+                                            ui.badge('Inactive', color='gray')
+                                    
+                                    if desc:
+                                        ui.label(desc).classes('text-sm text-gray-600 mt-1')
+                                    
+                                    ui.label(f'Added by {created_by} on {created_at.strftime("%Y-%m-%d %H:%M")}').classes('text-xs text-gray-400 mt-1')
+                                
+                                with ui.row().classes('gap-1'):
+                                    ui.button(
+                                        icon='delete',
+                                        on_click=lambda rid=restriction_id: self._delete_content_restriction(rid)
+                                    ).props('flat round dense color=red size=sm').tooltip('Delete restriction')
+                                    
+                                    toggle_icon = 'toggle_off' if is_active else 'toggle_on'
+                                    ui.button(
+                                        icon=toggle_icon,
+                                        on_click=lambda rid=restriction_id, active=is_active: self._toggle_content_restriction(rid, active)
+                                    ).props('flat round dense color=orange size=sm').tooltip('Toggle active/inactive')
+        
+        except Exception as e:
+            logger.error(f"Error loading content restrictions: {e}")
+            with self.restrictions_container:
+                ui.label('Error loading restrictions').classes('text-red-500 text-sm')
+    
+    def _delete_content_restriction(self, restriction_id: str):
+        """Delete a content restriction"""
+        try:
+            db_schema.conn.execute("""
+                DELETE FROM content_restrictions WHERE restriction_id = ?
+            """, [restriction_id])
+            
+            # Reload restrictions to update UI
+            self._load_content_restrictions()
+            
+            # Log the deletion
+            logger.info(f"Restriction deleted: {restriction_id}")
+            
+        except Exception as e:
+            logger.error(f"Error deleting content restriction: {e}")
+    
+    def _toggle_content_restriction(self, restriction_id: str, current_active: bool):
+        """Toggle restriction active/inactive status"""
+        try:
+            new_status = not current_active
+            db_schema.conn.execute("""
+                UPDATE content_restrictions 
+                SET is_active = ?, updated_at = ?
+                WHERE restriction_id = ?
+            """, [new_status, datetime.now(), restriction_id])
+            
+            # Reload restrictions to update UI
+            self._load_content_restrictions()
+            
+            # Log the change
+            status_text = 'activated' if new_status else 'deactivated'
+            logger.info(f"Restriction {status_text}: {restriction_id}")
+            
+        except Exception as e:
+            logger.error(f"Error toggling content restriction: {e}")
+    
+    def _check_content_restrictions(self, content: str) -> tuple[bool, list]:
+        """Check if content violates any active restrictions
+        
+        Returns:
+            tuple: (is_blocked, list of violated restrictions)
+        """
+        try:
+            restrictions = db_schema.conn.execute("""
+                SELECT restriction_text, description
+                FROM content_restrictions
+                WHERE is_active = TRUE
+            """).fetchall()
+            
+            content_lower = content.lower()
+            violated = []
+            
+            for restriction_text, description in restrictions:
+                # Split by comma to handle multiple keywords in one restriction
+                keywords = [kw.strip() for kw in restriction_text.split(',')]
+                
+                # Check each keyword
+                for keyword in keywords:
+                    if keyword and keyword in content_lower:
+                        violated.append({
+                            'text': keyword,
+                            'description': description or f'Part of restriction: {restriction_text}'
+                        })
+                        break  # Only add this restriction once even if multiple keywords match
+            
+            return len(violated) > 0, violated
+            
+        except Exception as e:
+            logger.error(f"Error checking content restrictions: {e}")
+            return False, []
+    
     def _create_metric_card(self, title: str, value: str, icon: str, color: str, subtitle: str):
         """Create a metric card"""
         with ui.card().classes('flex-1 metric-card'):
@@ -8863,9 +9061,10 @@ class AshokaGovDashboard:
             # Show loading state with animation
             self.analysis_container.clear()
             with self.analysis_container:
-                with ui.card().classes('w-full text-center p-8'):
+                with ui.card().classes('w-full text-center p-8 bg-blue-50 border-2 border-blue-500'):
                     ui.spinner(size='xl', color='primary')
-                    ui.label('🤖 AI is analyzing your content...').classes('text-xl font-semibold mt-4')
+                    ui.label('🤖 AI is analyzing your content...').classes('text-xl font-bold mt-4')
+                    ui.label('🌟 Powered by: Google Gemini (Cloud API)').classes('text-lg font-bold text-blue-700 mt-2')
                     progress_label = ui.label('Ingesting content...').classes('text-sm text-gray-600 mt-2')
             
             # Check if operation should be paused
@@ -9325,11 +9524,46 @@ class AshokaGovDashboard:
                         on_click=container.clear
                     ).props('flat round dense color=negative').tooltip('Remove preview')
 
-    def _handle_audio_upload(self, e):
+    async def _handle_audio_upload(self, e):
         """Handle audio file upload"""
-        filename = e.name if hasattr(e, 'name') else (e.filename if hasattr(e, 'filename') else 'audio file')
-        self._render_upload_preview(self.audio_preview_container, f'Audio: {filename}')
-        self._show_coming_soon_dialog('Audio analysis')
+        try:
+            # NiceGUI UploadEventArguments.file object
+            uploaded_file = e.file
+            filename = uploaded_file.name
+            # read() is async, must await it
+            file_content = await uploaded_file.read()
+            
+            logger.info(f"Audio upload: filename={filename}, content_size={len(file_content)}")
+            
+            if not file_content:
+                ui.notify('No file content received', type='warning')
+                return
+            
+            self._render_upload_preview(self.audio_preview_container, f'🎵 Audio: {filename}')
+            ui.notify(f'🎙️ Processing with OpenAI Whisper (Local AI): {filename}', type='info', timeout=3000)
+            
+            # Process audio file using Whisper
+            transcription, file_path, metadata = file_processor.process_audio(file_content, filename)
+            
+            # Show transcription preview
+            with self.audio_preview_container:
+                with ui.card().classes('w-full mt-2 bg-green-50 border-2 border-green-500'):
+                    ui.label('✅ Transcription Complete').classes('font-bold text-xl text-green-700')
+                    ui.label('🎙️ Processed by: OpenAI Whisper (Local AI - FREE)').classes('font-bold text-lg text-blue-700 mt-1')
+                    ui.label(f"Language: {metadata.get('language', 'unknown')} | Processor: {metadata.get('processor', 'Whisper')}").classes('text-sm text-gray-600 mt-1')
+                    with ui.expansion('View Transcription', icon='text_snippet').classes('w-full mt-2'):
+                        ui.label(transcription[:500] + '...' if len(transcription) > 500 else transcription).classes('text-sm')
+                    ui.button(
+                        'Analyze with Gemini AI',
+                        icon='psychology',
+                        on_click=lambda t=transcription: self._analyze_content(t)
+                    ).props('color=primary').classes('w-full mt-2')
+            
+            ui.notify(f'✅ Audio transcribed by OpenAI Whisper (Local AI)!', type='positive', timeout=4000)
+            
+        except Exception as e:
+            logger.error(f"Error handling audio upload: {e}")
+            ui.notify(f'Error processing audio: {str(e)}', type='negative')
 
     def _handle_image_upload(self, e):
         """Handle image file upload"""
@@ -9337,21 +9571,113 @@ class AshokaGovDashboard:
         self._render_upload_preview(self.image_preview_container, f'Image: {filename}')
         self._show_coming_soon_dialog('Image analysis')
 
-    def _handle_video_upload(self, e):
+    async def _handle_video_upload(self, e):
         """Handle video file upload"""
-        filename = e.name if hasattr(e, 'name') else (e.filename if hasattr(e, 'filename') else 'video file')
-        self._render_upload_preview(self.video_preview_container, f'Video: {filename}')
-        self._show_coming_soon_dialog('Video analysis')
+        try:
+            # NiceGUI UploadEventArguments.file object
+            uploaded_file = e.file
+            filename = uploaded_file.name
+            # read() is async, must await it
+            file_content = await uploaded_file.read()
+            
+            logger.info(f"Video upload: filename={filename}, content_size={len(file_content)}")
+            
+            if not file_content:
+                ui.notify('No file content received', type='warning')
+                return
+            
+            self._render_upload_preview(self.video_preview_container, f'🎥 Video: {filename}')
+            ui.notify(f'🎬 Processing with OpenAI Whisper + MoviePy (Local AI): {filename}', type='info', timeout=3000)
+            
+            # Process video file using Whisper
+            transcription, file_path, metadata = file_processor.process_video(file_content, filename)
+            
+            # Show transcription preview
+            with self.video_preview_container:
+                with ui.card().classes('w-full mt-2 bg-green-50 border-2 border-green-500'):
+                    ui.label('✅ Transcription Complete').classes('font-bold text-xl text-green-700')
+                    ui.label('🎬 Processed by: OpenAI Whisper + MoviePy (Local AI - FREE)').classes('font-bold text-lg text-blue-700 mt-1')
+                    ui.label(f"Duration: {metadata.get('duration', 'Unknown')} | Language: {metadata.get('language', 'unknown')} | Processor: {metadata.get('processor', 'Whisper')}").classes('text-sm text-gray-600 mt-1')
+                    with ui.expansion('View Transcription', icon='text_snippet').classes('w-full mt-2'):
+                        ui.label(transcription[:500] + '...' if len(transcription) > 500 else transcription).classes('text-sm')
+                    ui.button(
+                        'Analyze with Gemini AI',
+                        icon='psychology',
+                        on_click=lambda t=transcription: self._analyze_content(t)
+                    ).props('color=primary').classes('w-full mt-2')
+            
+            ui.notify(f'✅ Video transcribed by OpenAI Whisper + MoviePy (Local AI)!', type='positive', timeout=4000)
+            
+        except Exception as e:
+            logger.error(f"Error handling video upload: {e}")
+            ui.notify(f'Error processing video: {str(e)}', type='negative')
 
-    def _handle_document_upload(self, e):
+    async def _handle_document_upload(self, e):
         """Handle document file upload"""
-        filename = e.name if hasattr(e, 'name') else (e.filename if hasattr(e, 'filename') else 'document file')
-        self._render_upload_preview(self.document_preview_container, f'Document: {filename}')
+        try:
+            # NiceGUI UploadEventArguments.file is a LargeFileUpload/SmallFileUpload object
+            uploaded_file = e.file
+            filename = uploaded_file.name
+            # read() is async, must await it
+            file_content = await uploaded_file.read()
+            
+            logger.info(f"Document upload: filename={filename}, content_size={len(file_content)}")
+            
+            if not file_content:
+                ui.notify('No file content received', type='warning')
+                return
+            
+            self._render_upload_preview(self.document_preview_container, f'📄 Document: {filename}')
+            
+            # Determine processor based on file type
+            file_ext = filename.lower().split('.')[-1]
+            if file_ext == 'pdf':
+                processor_name = 'pdfplumber'
+            elif file_ext in ['docx', 'doc']:
+                processor_name = 'python-docx'
+            else:
+                processor_name = 'Python'
+            
+            ui.notify(f'📝 Processing with {processor_name} (Local Library): {filename}', type='info', timeout=3000)
+            
+            # Process document file (PDF with pdfplumber, DOCX with python-docx, TXT direct)
+            extracted_text, file_path, metadata = file_processor.process_document(file_content, filename)
+            
+            # Show extraction preview
+            with self.document_preview_container:
+                with ui.card().classes('w-full mt-2 bg-green-50 border-2 border-green-500'):
+                    ui.label('✅ Text Extraction Complete').classes('font-bold text-xl text-green-700')
+                    processor_display = metadata.get("processor", "Unknown")
+                    ui.label(f'📝 Processed by: {processor_display} (Local Library - FREE)').classes('font-bold text-lg text-blue-700 mt-1')
+                    ui.label(f"Type: {metadata.get('file_type', 'unknown')} | Pages: {metadata.get('page_count', 'N/A')} | Chars: {metadata.get('char_count', 0):,}").classes('text-sm text-gray-600 mt-1')
+                    with ui.expansion('View Extracted Text', icon='text_snippet').classes('w-full mt-2'):
+                        ui.label(extracted_text[:500] + '...' if len(extracted_text) > 500 else extracted_text).classes('text-sm')
+                    ui.button(
+                        'Analyze with Gemini AI',
+                        icon='psychology',
+                        on_click=lambda t=extracted_text: self._analyze_content(t)
+                    ).props('color=primary').classes('w-full mt-2')
+            
+            processor_name = metadata.get('processor', 'Unknown')
+            ui.notify(f'✅ Document processed by {processor_name} (Local Library)!', type='positive', timeout=4000)
+            
+        except Exception as e:
+            logger.error(f"Error handling document upload: {e}")
+            logger.exception("Full traceback:")
+            ui.notify(f'Error processing document: {str(e)}', type='negative')
 
     def _display_analysis_results(self, analysis, content: str):
         """Display comprehensive analysis results"""
         self.analysis_container.clear()
         with self.analysis_container:
+            # Processor Info Banner
+            with ui.card().classes('w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white'):
+                with ui.row().classes('items-center justify-center gap-3 p-4'):
+                    ui.icon('auto_awesome', size='lg')
+                    ui.label('✅ Analysis Complete').classes('font-bold text-2xl')
+                with ui.row().classes('items-center justify-center gap-2 pb-3'):
+                    ui.label('🌟 Powered by: Google Gemini (Cloud API)').classes('font-bold text-xl')
+            
             # Summary Card
             with ui.card().classes('w-full bg-blue-50'):
                 with ui.row().classes('items-center gap-2 mb-2'):
@@ -9681,6 +10007,36 @@ class AshokaGovDashboard:
         
         if not prompt or not prompt.strip():
             ui.notify('Please enter a prompt', type='warning')
+            return
+        
+        # Check content restrictions
+        is_blocked, violated_restrictions = self._check_content_restrictions(prompt)
+        if is_blocked:
+            violation_list = ', '.join([r['text'] for r in violated_restrictions])
+            ui.notify(f'⛔ Content generation blocked: Restricted keywords detected ({violation_list})', type='negative', timeout=5000)
+            
+            # Show detailed violation message
+            self.generator_output_container.clear()
+            with self.generator_output_container:
+                with ui.card().classes('w-full p-6 bg-red-50 border-l-4 border-red-500'):
+                    with ui.row().classes('items-center gap-3 mb-3'):
+                        ui.icon('block', size='xl').classes('text-red-600')
+                        ui.label('Content Generation Blocked').classes('text-2xl font-bold text-red-700')
+                    
+                    ui.label('Your prompt contains restricted keywords or phrases that are not allowed for AI content generation.').classes('text-gray-700 mb-3')
+                    
+                    ui.label('Violated Restrictions:').classes('font-semibold text-red-700 mb-2')
+                    for restriction in violated_restrictions:
+                        with ui.row().classes('items-start gap-2 mb-2'):
+                            ui.icon('warning').classes('text-red-500 text-sm mt-1')
+                            with ui.column():
+                                ui.label(f'Keyword: "{restriction["text"]}"').classes('font-medium text-red-600')
+                                if restriction['description']:
+                                    ui.label(restriction['description']).classes('text-sm text-gray-600')
+                    
+                    ui.label('Please modify your prompt to remove these restricted terms and try again.').classes('text-sm text-gray-600 mt-3 italic')
+            
+            logger.warning(f"Content generation blocked due to restrictions: {violation_list}")
             return
         
         try:

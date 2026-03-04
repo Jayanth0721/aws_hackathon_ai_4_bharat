@@ -14,6 +14,7 @@ duckdb>=0.10.0
 pytest==7.4.3
 hypothesis==6.92.0
 pytest-asyncio==0.21.1
+websockets>=13.0
 
 # Document processing
 PyPDF2==3.0.1
@@ -33,3 +34,12 @@ python-multipart==0.0.6
 
 # AI/ML
 google-generativeai>=0.3.0
+
+# Audio/Video processing
+openai-whisper==20231117
+moviepy==1.0.3
+pydub==0.25.1
+
+# Document processing (enhanced)
+pdfplumber==0.11.0
+Pillow==10.2.0

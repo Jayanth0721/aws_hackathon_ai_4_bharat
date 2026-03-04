@@ -1,7 +1,7 @@
 """Authentication and session models"""
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class User(BaseModel):
@@ -24,7 +24,8 @@ class OTP(BaseModel):
     expires_at: datetime
     is_used: bool = False
     
-    @validator('code')
+    @field_validator('code')
+    @classmethod
     def validate_code(cls, v):
         if not v.isdigit():
             raise ValueError('OTP code must be numeric')

@@ -237,3 +237,87 @@ Ashoka is a GenAI Content Intelligence, Transformation & Observability Platform 
 3. WHEN a user requests data deletion, THE Ashoka_Platform SHALL remove all associated content and metadata within 30 days
 4. THE Ashoka_Platform SHALL not share user data with third parties without explicit consent
 5. THE Ashoka_Platform SHALL maintain audit logs for compliance verification
+
+### Requirement 19: AI Content Generation Restrictions
+
+**User Story:** As a platform administrator, I want to define content restrictions that block AI content generation for specific keywords or phrases, so that I can prevent generation of inappropriate, illegal, or policy-violating content.
+
+#### Acceptance Criteria
+
+1. WHEN an administrator adds a content restriction, THE Ashoka_Platform SHALL store the restriction with keyword/phrase, description, and active status
+2. WHEN a user attempts to generate AI content, THE Ashoka_Platform SHALL check the prompt against all active restrictions
+3. WHEN a prompt contains a restricted keyword/phrase (case-insensitive), THE Ashoka_Platform SHALL block content generation
+4. WHEN content generation is blocked, THE Ashoka_Platform SHALL display which restrictions were violated and their descriptions
+5. WHEN an administrator toggles a restriction, THE Ashoka_Platform SHALL update its active status immediately
+6. WHEN an administrator deletes a restriction, THE Ashoka_Platform SHALL remove it from the system
+7. THE Ashoka_Platform SHALL log all restriction violations with timestamp, user, and violated keywords
+8. ONLY users with admin role SHALL be able to add, modify, or delete content restrictions
+9. THE Ashoka_Platform SHALL display all active restrictions in the Security dashboard
+10. WHEN checking restrictions, THE Ashoka_Platform SHALL perform case-insensitive matching
+
+#### Correctness Properties
+
+**Property 19.1: Restriction Enforcement**
+```
+FORALL prompt, restriction:
+  IF restriction.is_active = TRUE AND 
+     restriction.text IN prompt.lower() THEN
+     content_generation_blocked(prompt) = TRUE
+```
+
+**Property 19.2: Admin-Only Access**
+```
+FORALL user, operation:
+  IF operation IN {add_restriction, delete_restriction, toggle_restriction} THEN
+     user.role = 'admin' REQUIRED
+```
+
+**Property 19.3: Violation Logging**
+```
+FORALL blocked_generation:
+  EXISTS log_entry WHERE
+    log_entry.timestamp = blocked_generation.timestamp AND
+    log_entry.user = blocked_generation.user AND
+    log_entry.violated_restrictions = blocked_generation.matched_restrictions
+```
+
+### Requirement 20: Enhanced Alerts from Content History
+
+**User Story:** As a content manager, I want alerts to be generated from actual Content Intelligence analysis and Content Transformer operations, so that I receive relevant notifications about my content activities.
+
+#### Acceptance Criteria
+
+1. WHEN content is analyzed with quality score < 60%, THE Monitoring_System SHALL generate a warning alert
+2. WHEN content is analyzed with negative sentiment (confidence > 70%), THE Monitoring_System SHALL generate a warning alert
+3. WHEN content is analyzed with quality score ≥ 85%, THE Monitoring_System SHALL generate a success alert
+4. WHEN content is transformed successfully, THE Monitoring_System SHALL generate a success alert with platform details
+5. WHEN risk assessment identifies high policy or backlash risk, THE Monitoring_System SHALL generate a critical alert
+6. WHEN content should be blocked due to risk, THE Monitoring_System SHALL generate a critical alert
+7. THE Monitoring_System SHALL display alerts from the last 24 hours by default
+8. THE Monitoring_System SHALL allow filtering alerts by type (All, Critical, Warning, Info, Success)
+9. THE Monitoring_System SHALL display alert statistics showing counts by type
+10. THE Monitoring_System SHALL auto-refresh alerts every 10 minutes
+
+#### Correctness Properties
+
+**Property 20.1: Alert Generation from Analysis**
+```
+FORALL content_analysis:
+  IF content_analysis.quality_score < 60 THEN
+     EXISTS alert WHERE alert.type = 'warning' AND 
+                       alert.source = content_analysis.id
+```
+
+**Property 20.2: Alert Filtering**
+```
+FORALL alert_filter, displayed_alerts:
+  IF alert_filter != 'All' THEN
+     FORALL alert IN displayed_alerts:
+       alert.type = alert_filter.lower()
+```
+
+**Property 20.3: Time-based Alert Display**
+```
+FORALL displayed_alert:
+  displayed_alert.timestamp >= (current_time - 24_hours)
+```

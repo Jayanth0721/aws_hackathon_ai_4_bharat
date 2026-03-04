@@ -14,6 +14,15 @@ data_dir.mkdir(exist_ok=True)
 from dotenv import load_dotenv
 load_dotenv()
 
+# Load storage secret for WebSocket connections
+storage_secret = os.getenv('STORAGE_SECRET')
+if not storage_secret:
+    print("❌ ERROR: STORAGE_SECRET environment variable is not set!")
+    print("   This is required for WebSocket connections to work properly.")
+    print("   Please add STORAGE_SECRET to your .env file.")
+    print("   Example: STORAGE_SECRET=your-secure-random-string-here")
+    sys.exit(1)
+
 # Import NiceGUI and pages
 from nicegui import ui, app
 from src.ui.auth_page import create_auth_page
@@ -116,5 +125,6 @@ if __name__ == "__main__":
         dark=False,
         reload=False,
         host='0.0.0.0',
-        port=8080
+        port=8080,
+        storage_secret=storage_secret
     )
