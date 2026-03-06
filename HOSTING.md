@@ -81,9 +81,29 @@ cd ashoka
 
 ### 2. Install Python Dependencies
 
+**Option A: Using Virtual Environment (Recommended for Python 3.12+)**
+
+```bash
+# Install python3-venv
+sudo apt-get install python3-venv python3-full -y
+
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+**Option B: System-wide Installation (Python 3.11 and below)**
+
 ```bash
 pip3 install -r requirements.txt
 ```
+
+**Note:** If you get "externally-managed-environment" error, use Option A (virtual environment).
 
 ### 3. Configure Environment Variables
 
@@ -113,7 +133,11 @@ STORAGE_SECRET=your_secure_random_string_here
 ### 4. Initialize Database
 
 ```bash
-python3 run_dashboard.py
+# If using virtual environment, make sure it's activated
+source venv/bin/activate
+
+# Initialize database
+python run_dashboard.py
 # Press Ctrl+C after database initialization completes
 ```
 
@@ -192,8 +216,11 @@ sudo service nginx restart
 ### 3. Start Ashoka Application
 
 ```bash
+# If using virtual environment
+source venv/bin/activate
+
 # Run in background
-nohup python3 run_dashboard.py > dashboard.log 2>&1 &
+nohup python run_dashboard.py > dashboard.log 2>&1 &
 ```
 
 ### 4. Test HTTP Access
@@ -392,7 +419,7 @@ sudo nano /etc/supervisor/conf.d/ashoka.conf
 Paste:
 ```ini
 [program:ashoka]
-command=/usr/bin/python3 /home/ubuntu/ashoka/run_dashboard.py
+command=/home/ubuntu/ashoka/venv/bin/python /home/ubuntu/ashoka/run_dashboard.py
 directory=/home/ubuntu/ashoka
 user=ubuntu
 autostart=true
@@ -400,7 +427,7 @@ autorestart=true
 redirect_stderr=true
 stdout_logfile=/var/log/ashoka/dashboard.log
 stderr_logfile=/var/log/ashoka/dashboard_error.log
-environment=PATH="/usr/bin",HOME="/home/ubuntu"
+environment=PATH="/home/ubuntu/ashoka/venv/bin:/usr/bin",HOME="/home/ubuntu"
 ```
 
 #### 2. Create Log Directory
@@ -455,7 +482,7 @@ After=network.target
 Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/ashoka
-ExecStart=/usr/bin/python3 /home/ubuntu/ashoka/run_dashboard.py
+ExecStart=/home/ubuntu/ashoka/venv/bin/python /home/ubuntu/ashoka/run_dashboard.py
 Restart=always
 RestartSec=10
 StandardOutput=append:/var/log/ashoka/dashboard.log
