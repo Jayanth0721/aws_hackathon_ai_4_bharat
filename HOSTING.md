@@ -185,9 +185,10 @@ server {
         proxy_pass http://ashoka_backend;
         proxy_http_version 1.1;
         
-        # WebSocket support
+        # WebSocket support - CRITICAL for NiceGUI
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
+        proxy_buffering off;  # REQUIRED for WebSocket to work
         
         # Standard proxy headers
         proxy_set_header Host $host;
@@ -348,9 +349,10 @@ server {
         proxy_pass http://ashoka_backend;
         proxy_http_version 1.1;
         
-        # WebSocket support
+        # WebSocket support - CRITICAL for NiceGUI
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
+        proxy_buffering off;  # REQUIRED for WebSocket to work
         
         # Standard proxy headers
         proxy_set_header Host $host;
@@ -588,6 +590,91 @@ sudo service nginx reload
 
 ### Issue: WebSocket Connection Failed
 
+**Symptoms:**
+- Page loads but buttons don't work
+- Browser console shows: `WebSocket connection to 'ws://...' failed`
+- Error: `transport=websocket failed`
+- No interactivity on the page
+
+**Root Cause:**
+NiceGUI requires WebSocket connections for all UI interactivity. If WebSockets fail, the page loads but nothing works.
+
+**Solution 1: Fix Nginx Configuration (if using nginx)**
+
+The nginx config MUST include `proxy_buffering off` for WebSocket support:
+
+```bash
+sudo nano /etc/nginx/sites-available/default
+```
+
+Ensure your location block has:
+```nginx
+location / {
+    proxy_pass http://ashoka_backend;
+    proxy_http_version 1.1;
+    
+    # WebSocket support - CRITICAL
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_buffering off;  # THIS LINE IS REQUIRED
+    
+    # Other headers...
+}
+```
+
+Then restart nginx:
+```bash
+sudo nginx -t
+sudo service nginx restart
+```
+
+**Solution 2: Test Without Nginx First**
+
+Stop nginx and test the app directly on port 8080:
+
+```bash
+# Stop nginx
+sudo service nginx stop
+
+# Make sure app is running
+ps aux | grep python
+
+# If not running, start it
+cd ~/ashoka
+source venv/bin/activate
+nohup venv/bin/python run_dashboard.py > ashoka.log 2>&1 &
+
+# Test at http://your-ec2-ip:8080 or http://ashoka-ai.hopto.org:8080
+```
+
+If port 8080 works but nginx doesn't, the issue is nginx configuration.
+
+**Solution 3: Check STORAGE_SECRET**
+
+Verify your .env file has STORAGE_SECRET set:
+```bash
+cat ~/ashoka/.env | grep STORAGE_SECRET
+```
+
+If missing, add it:
+```bash
+echo "STORAGE_SECRET=$(openssl rand -hex 32)" >> ~/ashoka/.env
+```
+
+Then restart the app:
+```bash
+sudo supervisorctl restart ashoka
+```
+
+**Verify WebSocket headers:**
+```bash
+curl -i -N -H "Connection: Upgrade" -H "Upgrade: websocket" http://localhost:8080
+```
+
+You should see `HTTP/1.1 101 Switching Protocols` if WebSockets are working.
+
+### Issue: WebSocket Connection Failed
+
 **Check Nginx configuration:**
 ```bash
 sudo nginx -t
@@ -595,8 +682,10 @@ sudo nginx -t
 
 **Verify WebSocket headers:**
 ```bash
-curl -i -N -H "Connection: Upgrade" -H "Upgrade: websocket" https://ashoka-ai.hopto.org
+curl -i -N -H "Connection: Upgrade" -H "Upgrade: websocket" http://localhost:8080
 ```
+
+You should see `HTTP/1.1 101 Switching Protocols` if WebSockets are working.
 
 ### Issue: 502 Bad Gateway
 

@@ -4844,9 +4844,10 @@ def launch_dashboard():
     
     ui.run(
         title='Ashoka - GenAI Governance Platform',
-        favicon='ðŸ›¡ï¸',
+        favicon='🛡️',
         dark=False,
         reload=False,
+        host="0.0.0.0",
         port=8080
     )
 
