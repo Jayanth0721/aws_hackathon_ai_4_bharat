@@ -297,6 +297,114 @@ Apply the specified style, tone, and constraints."""
                 }
             }
     
+    def analyze_image(
+        self,
+        image_data: bytes,
+        prompt: str = "Analyze this image and provide detailed insights"
+    ) -> Dict[str, Any]:
+        """
+        Analyze image using Gemini Vision
+        
+        Args:
+            image_data: Image file bytes
+            prompt: Analysis prompt
+            
+        Returns:
+            Analysis results
+        """
+        if not self.is_available():
+            raise Exception("Gemini client not initialized. Check API key and installation.")
+        
+        try:
+            import base64
+            start_time = datetime.now()
+            
+            # Encode image to base64
+            image_base64 = base64.b64encode(image_data).decode('utf-8')
+            
+            # Create vision prompt
+            system_instruction = """You are an expert image analyst. Analyze the provided image and return 
+            a structured JSON response with the following fields:
+            - description: Detailed description of what's in the image (3-5 sentences)
+            - objects: List of main objects/subjects detected
+            - scene: Type of scene (indoor, outdoor, portrait, landscape, etc.)
+            - colors: Dominant colors in the image
+            - mood: Overall mood/atmosphere of the image
+            - text_detected: Any text visible in the image (if any)
+            - quality_assessment: Technical quality assessment (lighting, composition, clarity)
+            - suggested_tags: 5-10 relevant tags for categorization
+            - content_type: Type of content (photo, illustration, diagram, screenshot, etc.)
+            
+            Return ONLY valid JSON, no additional text or markdown."""
+            
+            # Generate content with image
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=[
+                    types.Part.from_bytes(
+                        data=image_data,
+                        mime_type="image/jpeg"  # Gemini supports jpeg, png, webp
+                    ),
+                    system_instruction + "\n\n" + prompt
+                ],
+                config=types.GenerateContentConfig(
+                    temperature=0.3,
+                    top_p=0.95,
+                    top_k=40,
+                    max_output_tokens=2048,
+                )
+            )
+            
+            # Calculate metrics
+            elapsed_time = (datetime.now() - start_time).total_seconds()
+            
+            # Extract text
+            response_text = response.text if hasattr(response, 'text') else ''
+            
+            # Extract JSON from response (handle markdown code blocks)
+            if '```json' in response_text:
+                start = response_text.find('```json') + 7
+                end = response_text.find('```', start)
+                if end != -1:
+                    response_text = response_text[start:end].strip()
+            elif '```' in response_text:
+                start = response_text.find('```') + 3
+                end = response_text.find('```', start)
+                if end != -1:
+                    response_text = response_text[start:end].strip()
+            
+            # Parse JSON response
+            analysis = json.loads(response_text)
+            
+            # Add metadata
+            analysis['_metadata'] = {
+                'model': self.model_name,
+                'latency': elapsed_time,
+                'provider': 'Google Gemini Vision',
+                'analyzed_at': datetime.now().isoformat()
+            }
+            
+            logger.info(f"Gemini analyzed image: {elapsed_time:.2f}s")
+            
+            return analysis
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse Gemini vision response as JSON: {e}")
+            # Return raw response if JSON parsing fails
+            return {
+                'description': response_text,
+                'error': 'Failed to parse structured response',
+                'raw_response': response_text,
+                '_metadata': {
+                    'model': self.model_name,
+                    'latency': elapsed_time,
+                    'provider': 'Google Gemini Vision'
+                }
+            }
+        except Exception as e:
+            logger.error(f"Error analyzing image with Gemini: {e}")
+            raise
+    
     def get_model_info(self) -> Dict[str, Any]:
         """Get information about the current model"""
         return {

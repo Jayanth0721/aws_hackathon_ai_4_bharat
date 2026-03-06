@@ -33,9 +33,9 @@ if ! grep -q "STORAGE_SECRET" .env; then
     echo "STORAGE_SECRET=$(openssl rand -hex 32)" >> .env
 fi
 
-# Start dashboard in screen
-echo "🚀 Starting dashboard in screen session..."
-screen -dmS ashoka bash -c 'source venv/bin/activate && python run_dashboard.py'
+# Start dashboard in background
+echo "🚀 Starting dashboard..."
+nohup python run_dashboard.py > dashboard.log 2>&1 &
 
 # Wait a moment for startup
 sleep 3
@@ -49,10 +49,9 @@ if ps aux | grep -q "[r]un_dashboard.py"; then
     echo "✅ Dashboard updated and running!"
     echo "📊 Access at: http://$PUBLIC_IP:8080"
     echo ""
-    echo "To view logs: screen -r ashoka"
-    echo "To detach from logs: Ctrl+A then D"
+    echo "To view logs: tail -f dashboard.log"
 else
     echo ""
     echo "❌ Dashboard failed to start!"
-    echo "Check logs: screen -r ashoka"
+    echo "Check logs: tail -f dashboard.log"
 fi

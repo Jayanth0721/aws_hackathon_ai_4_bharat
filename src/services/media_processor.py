@@ -1,9 +1,13 @@
 """Media Processor - Audio and Video Analysis using Whisper"""
 import os
 import tempfile
+import warnings
 from pathlib import Path
 from typing import Optional, Dict, Any
 from src.utils.logging import logger
+
+# Suppress FP16 warning from Whisper (it automatically uses FP32 on CPU)
+warnings.filterwarnings('ignore', message='FP16 is not supported on CPU')
 
 class MediaProcessor:
     """Process audio and video files using Whisper for transcription"""

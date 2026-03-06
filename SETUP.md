@@ -96,6 +96,57 @@ Open your browser and navigate to:
 http://localhost:8080
 ```
 
+### 8. (Optional) Install YouTube Analysis Dependencies
+
+To enable YouTube video analysis feature:
+
+#### Install yt-dlp
+
+```bash
+pip install yt-dlp
+```
+
+#### Install FFmpeg (Required for audio extraction)
+
+**Windows:**
+1. Download FFmpeg from https://ffmpeg.org/download.html
+2. Extract to `C:\ffmpeg`
+3. Add `C:\ffmpeg\bin` to system PATH
+4. Verify: `ffmpeg -version`
+
+**macOS:**
+```bash
+brew install ffmpeg
+```
+
+**Linux:**
+```bash
+sudo apt-get install ffmpeg
+```
+
+#### Install Whisper AI (Required for transcription)
+
+```bash
+pip install openai-whisper
+```
+
+**Note**: Whisper requires PyTorch. It will be installed automatically, but may take some time.
+
+#### Verify YouTube Analysis Setup
+
+After installing dependencies, restart the application:
+```bash
+python run_dashboard.py
+```
+
+Check the console for:
+```
+✅ yt-dlp is available for YouTube processing
+✅ Whisper model loaded successfully (base)
+```
+
+If you see these messages, YouTube analysis is ready to use!
+
 ## Login Process
 
 1. Enter username and password
@@ -133,6 +184,43 @@ http://localhost:8080
 - Check that `data/` directory exists
 - Verify `data/ashoka.duckdb` file is being created
 - Check file permissions
+
+### Issue: "yt-dlp not installed"
+**Solution**:
+- Run `pip install yt-dlp`
+- Restart the application
+- Verify installation: `yt-dlp --version`
+
+### Issue: "Whisper not available"
+**Solution**:
+- Run `pip install openai-whisper`
+- This will also install PyTorch (may take 5-10 minutes)
+- Restart the application
+
+### Issue: "FFmpeg not found"
+**Solution**:
+- Install FFmpeg (see step 8 above)
+- Add FFmpeg to system PATH
+- Verify: `ffmpeg -version`
+- Restart terminal/application
+
+### Issue: "YouTube video unavailable"
+**Solution**:
+- Check if video is private, deleted, or region-restricted
+- Try a different video
+- Verify URL format is correct
+
+### Issue: "Video too long"
+**Solution**:
+- Maximum supported duration is 2 hours
+- Select a shorter video
+- Or split long videos into segments
+
+### Issue: "Rate limit exceeded"
+**Solution**:
+- Users can analyze 10 videos per hour
+- Wait for the rate limit window to reset
+- Admin users have unlimited access
 
 ## Creating New Users
 

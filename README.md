@@ -1,8 +1,34 @@
-# Ashoka - GenAI Governance Platform
+# Ashoka - GenAI Governance & Observability Platform
 
-A comprehensive AI-powered content governance platform built for the AWS Hackathon. Ashoka provides intelligent content analysis, multi-platform transformation, real-time monitoring, and security features.
+> **Intelligent Content Governance with AI-Powered Analysis, Generation, and Multi-Platform Transformation**
+
+A comprehensive enterprise-grade platform that combines AI content intelligence, automated quality monitoring, multi-platform content transformation, and robust security governance—all in one unified dashboard.
+
+---
+
+## 🌟 What is Ashoka?
+
+Ashoka is a next-generation GenAI governance platform designed to help organizations, content creators, and enterprises manage their AI-generated and user-created content with confidence. It provides real-time content analysis, quality scoring, risk assessment, and automated transformation for multiple social media platforms—while maintaining strict governance and security controls.
+
+### Why Ashoka?
+
+In today's AI-driven content landscape, organizations face critical challenges:
+- **Quality Control**: Ensuring AI-generated content meets standards
+- **Risk Management**: Detecting policy violations, toxicity, and inappropriate content
+- **Multi-Platform Publishing**: Adapting content for different social media platforms
+- **Cost Optimization**: Managing AI API costs effectively
+- **Security & Compliance**: Maintaining audit trails and access controls
+
+Ashoka addresses all these challenges in a single, intuitive platform.
+
+---
 
 ## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.8 or higher
+- FFmpeg (for audio/video processing)
+- Google Gemini API key
 
 ### Automated Setup (Recommended)
 
@@ -11,20 +37,15 @@ A comprehensive AI-powered content governance platform built for the AWS Hackath
 chmod +x start.sh
 ./start.sh
 ```
-This will automatically:
-- Check Python version
-- Install FFmpeg (Linux: `sudo apt install ffmpeg`, Mac: `brew install ffmpeg`)
-- Install Python dependencies
-- Create .env file
-- Launch the dashboard
 
 **Windows:**
 ```bash
 start.bat
 ```
-This will:
+
+The script will automatically:
 - Check Python version
-- Check for FFmpeg and offer to install it using winget
+- Install FFmpeg (if needed)
 - Install Python dependencies
 - Create .env file
 - Launch the dashboard
@@ -36,7 +57,6 @@ This will:
 # Linux: sudo apt install ffmpeg
 # Mac: brew install ffmpeg
 # Windows: winget install --id=Gyan.FFmpeg -e
-# See INSTALL_FFMPEG_WINDOWS.md for detailed Windows instructions
 
 # 2. Install Python dependencies
 pip install -r requirements.txt
@@ -51,96 +71,213 @@ python run_dashboard.py
 
 Open http://localhost:8080 in your browser.
 
-**Note:** If you get audio/video processing errors, you need to install FFmpeg. See [INSTALL_FFMPEG_WINDOWS.md](INSTALL_FFMPEG_WINDOWS.md) for Windows instructions.
+---
 
 ## 🔐 Default Credentials
 
-- **Admin User**: `admin` / `admin123` (has access to Security tab)
-- **Demo User**: `demo` / `demo123` (standard user)
+- **Admin User**: `admin` / `admin123` (full access including Security tab)
+- **Demo User**: `demo` / `demo123` (standard user access)
+- **Creator Role**: Available during signup for content creation access
 
-## ✨ Key Features
+---
 
-### 1. Content Intelligence & Analysis
-- **Text Analysis**: AI-powered content analysis with sentiment, keywords, and quality scoring
-- **File Upload Support**: Audio, Image, Video, and Document uploads (with remove functionality)
-- **Analysis History**: Track all analyzed content with preview and reload options
+## ✨ Core Features
 
-### 2. AI Content Generator
-- **Text/Notes Generation**: Generate professional content using Google Gemini AI
-- **Coming Soon**: Image and Video generation features
+### 1. 🧠 Content Intelligence & Analysis
+**AI-powered content analysis with comprehensive insights**
 
-### 3. Multi-Platform Content Transformer
-- Transform content for different platforms (Twitter, LinkedIn, Instagram, Facebook, Blog)
-- Customize tone (Professional, Casual, Formal, Friendly)
-- Optional hashtag generation
-- **Transform History**: View and reload past transformations
+- **Multi-Format Support**: Text, Audio, Video, Images, Documents (PDF, DOCX)
+- **YouTube Integration**: Direct URL analysis with transcript extraction
+- **Sentiment Analysis**: Positive, Negative, Neutral with confidence scores
+- **Quality Scoring**: 0-100% quality metrics based on multiple factors
+- **Keyword Extraction**: Automatic identification of key terms
+- **Topic Detection**: Content categorization and theme identification
+- **Analysis History**: Track all analyzed content with reload capability
 
-### 4. Real-Time Monitoring
-- Operation metrics and success rates
-- System performance tracking
-- Error monitoring and alerts
+**Quality Score Factors:**
+- Sentiment (negative content reduces score)
+- Confidence levels
+- Content length and completeness
+- Keyword richness
+- Topic diversity
 
-### 5. Alerts & Notifications
-- Real-time alerts from Content Intelligence analysis history
-- Real-time alerts from Multi-Platform Transformer history
-- Quality-based warnings (< 60% quality score)
-- Sentiment-based warnings (negative sentiment > 70% confidence)
-- Risk assessments (policy violations, toxicity)
-- Transformation success notifications
-- Filter by type: All, Critical, Warning, Info, Success
-- Auto-refresh every 10 minutes
+### 2. 🎨 AI Content Generator
+**Create professional content using Google Gemini AI**
 
-### 6. Security Dashboard (Admin Only)
-- Login activity monitoring
-- Security event tracking
-- User session management
-- Geographic and device information
-- **NEW: AI Content Generation Restrictions**
-  - Define keywords/phrases that block AI content generation
-  - Prevent inappropriate, illegal, or policy-violating content
-  - Toggle restrictions on/off without deleting
-  - Reduces AI API costs by blocking invalid prompts before API calls
-  - Admin-only access for content governance
+- **Text Generation**: Professional emails, articles, social posts, notes
+- **Image Generation**: AI-powered image creation using Son of Ashoka API
+  - **Cost-Optimized**: Cloudflare Workers wrapper for efficient processing
+  - **Scalable**: Better computational power distribution
+  - **Fast**: 10-30 second generation time
+  - **Download**: Save generated images locally
+- **Prompt-Based**: Natural language descriptions
+- **Content Restrictions**: Admin-controlled keyword blocking for governance
+- **Integration**: Use generated content directly in transformer
 
-### 7. Role-Based Access Control
-- **User Role**: Standard access (default for signup)
-- **Creator Role**: Content creation access (selectable during signup)
-- **Admin Role**: Full access including Security tab (pre-configured)
+**Image Generation Benefits:**
+- No direct API costs (uses Cloudflare Workers)
+- Automatic load balancing
+- Global edge network distribution
+- Reduced latency
+
+### 3. 🔄 Multi-Platform Content Transformer
+**Transform content for different social media platforms**
+
+- **Supported Platforms**: LinkedIn, Twitter/X, Instagram, Facebook, Threads, Blog
+- **Tone Customization**: Professional, Casual, Storytelling
+- **Hashtag Generation**: Optional platform-specific hashtags
+- **Batch Processing**: Transform for multiple platforms simultaneously
+- **Transform History**: Track and reload previous transformations
+- **Role-Based Access**: Admin and Creator roles only
+
+**Use Cases:**
+- Repurpose blog posts for social media
+- Adapt professional content for casual platforms
+- Create platform-specific campaigns from single source
+- Maintain consistent messaging across channels
+
+### 4. 📊 Real-Time Monitoring
+**Comprehensive system and content performance tracking**
+
+- **Performance Trends**: AWS EC2-style line graphs for 24-hour metrics
+- **Quality Metrics**: Average scores, distribution, trends
+- **Risk Assessment**: Toxicity detection, policy violations
+- **Operation Metrics**: Success rates, error tracking
+- **System Health**: API status, database connectivity, AI model performance
+- **Auto-Refresh**: Updates every 10 minutes
+
+**Monitored Metrics:**
+- Content processing rate
+- Quality score trends
+- Risk alert frequency
+- API response times
+- Storage utilization
+
+### 5. 🚨 Alerts & Notifications
+**Intelligent alerting system with quality-based warnings**
+
+- **Quality Alerts**:
+  - Critical: < 60% quality score (immediate review)
+  - Warning: < 80% quality score (review recommended)
+  - Success: ≥ 85% quality score (high quality)
+- **Sentiment Alerts**: Negative sentiment with high confidence
+- **Risk Alerts**: Policy violations, toxicity, backlash risk
+- **Filter Options**: All, Critical, Warning, Info, Success
+- **Real-Time Updates**: Auto-refresh every 10 minutes
+- **24-Hour Window**: Recent alerts with time tracking
+
+**Alert Insights:**
+- Platform health indicators
+- Content quality trends
+- Risk exposure levels
+- Successful operations count
+
+### 6. 🔒 Security Dashboard (Admin Only)
+**Comprehensive security monitoring and governance**
+
+- **Login Activity**: Track all authentication attempts
+- **Security Events**: Monitor password changes, OTP generation, session creation
+- **User Session Management**: Active session tracking
+- **AI Content Restrictions**:
+  - Define blocked keywords/phrases
+  - Prevent inappropriate content generation
+  - Reduce AI API costs by blocking invalid prompts
+  - Admin-only configuration for governance
+- **Audit Trail**: Complete security event history
+- **Access Control**: Role-based permissions
+
+**Security Benefits:**
+- Prevent policy violations before they happen
+- Reduce wasted AI API calls
+- Maintain compliance with content policies
+- Track user behavior and access patterns
+
+### 7. 👥 Role-Based Access Control (RBAC)
+**Granular permissions for different user types**
+
+- **User Role**: Standard access to analysis and viewing
+- **Creator Role**: Content creation and transformation access
+- **Admin Role**: Full access including security and restrictions
+- **Feature Locking**: Visual indicators for restricted features
+- **Personalized Dashboard**: Role-specific content and metrics
+
+---
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: NiceGUI (Python-based web framework)
-- **AI/ML**: 
-  - Google Gemini API (gemini-2.5-flash) - Content analysis, generation, transformation
-  - OpenAI Whisper (local) - Audio/video transcription
-- **Document Processing**:
-  - pdfplumber - PDF text extraction
-  - python-docx - DOCX text extraction
-- **Audio/Video Processing**:
-  - openai-whisper - Speech-to-text transcription (runs locally)
-  - moviepy - Video processing and audio extraction
-  - pydub - Audio format conversion
-  - **FFmpeg** (required) - Multimedia framework for audio/video handling
-- **Database**: DuckDB (local) or DynamoDB (AWS cloud)
-- **Authentication**: OTP-based with session management
-- **Styling**: Tailwind CSS with custom teal theme
+### Frontend
+- **NiceGUI**: Python-based reactive web framework
+- **Tailwind CSS**: Modern utility-first styling
+- **Custom Theme**: Teal/cyan gradient with dark mode support
 
-### 🎯 Which Tool Does What?
+### AI & Machine Learning
+- **Google Gemini API** (gemini-2.5-flash):
+  - Content analysis and sentiment detection
+  - Text generation and transformation
+  - Quality scoring and keyword extraction
+  - Audio/video transcription and analysis
+- **Son of Ashoka API** (Cloudflare Workers):
+  - AI image generation
+  - Cost-optimized processing
+  - Global edge distribution
 
-When you use different features, here's what processes your content:
+### Document Processing
+- **pdfplumber**: PDF text extraction (FREE)
+- **python-docx**: DOCX document processing (FREE)
+- **moviepy**: Video processing (FREE)
+- **FFmpeg**: Audio/video codec support (FREE)
 
-| Feature | Tool Used | Type | Cost |
-|---------|-----------|------|------|
-| **Text Analysis** | **Google Gemini** | Cloud API | Paid per request |
-| **Content Generation** | **Google Gemini** | Cloud API | Paid per request |
-| **Content Transformation** | **Google Gemini** | Cloud API | Paid per request |
-| **Audio Transcription** | **OpenAI Whisper** | Local AI | FREE |
-| **Video Transcription** | **OpenAI Whisper + MoviePy** | Local AI | FREE |
-| **PDF Text Extraction** | **pdfplumber** | Local Library | FREE |
-| **DOCX Text Extraction** | **python-docx** | Local Library | FREE |
-| **TXT/MD Reading** | **Python Built-in** | Local | FREE |
+### Database & Storage
+- **DuckDB**: Local file-based database (default)
+- **DynamoDB**: AWS cloud database (optional)
+- **File Storage**: Local uploads directory
 
-**Note:** The UI shows which tool is processing your content in real-time!
+### Authentication & Security
+- **OTP-based Authentication**: Secure login with time-limited codes
+- **Session Management**: Token-based with configurable timeout
+- **Password Hashing**: Secure credential storage
+- **Role-Based Access**: Granular permission system
+
+---
+
+## 💰 Cost Optimization
+
+### AI Processing Cost Breakdown
+
+| Feature | Tool Used | Type | Cost | Notes |
+|---------|-----------|------|------|-------|
+| Text Analysis | Google Gemini | Cloud API | ~$0.001/request | Paid |
+| Content Generation | Google Gemini | Cloud API | ~$0.002/request | Paid |
+| Content Transformation | Google Gemini | Cloud API | ~$0.001/platform | Paid |
+| **Image Generation** | **Son of Ashoka** | **Cloudflare Workers** | **FREE** | **Cost-optimized** |
+| Audio Transcription | Google Gemini | Cloud API | ~$0.001/request | Paid |
+| Video Transcription | Gemini + MoviePy | Cloud API | ~$0.001/request | Paid |
+| PDF Extraction | pdfplumber | Local | FREE | No API calls |
+| DOCX Extraction | python-docx | Local | FREE | No API calls |
+
+### Why Son of Ashoka for Image Generation?
+
+**Traditional Approach:**
+- Direct API calls to image generation services
+- Pay per image ($0.02-0.10 per image)
+- Rate limits and throttling
+- Single point of failure
+
+**Son of Ashoka Approach (Cloudflare Workers):**
+- ✅ **FREE**: No per-image costs
+- ✅ **Scalable**: Automatic load distribution
+- ✅ **Fast**: Global edge network (10-30s generation)
+- ✅ **Reliable**: Built-in redundancy and failover
+- ✅ **Optimized**: Better computational power allocation
+
+**Monthly Cost Estimate:**
+- **Local Mode** (DuckDB): $5-15/month (Gemini API only)
+- **Cloud Mode** (DynamoDB): $10-30/month (Gemini + AWS)
+- **Image Generation**: $0/month (Cloudflare Workers)
+
+For detailed cost analysis, see [COST_OPTIMIZATION.md](COST_OPTIMIZATION.md).
+
+---
 
 ## 📁 Project Structure
 
@@ -148,292 +285,275 @@ When you use different features, here's what processes your content:
 ashoka/
 ├── src/
 │   ├── ui/
-│   │   ├── dashboard.py      # Main dashboard UI
-│   │   └── auth_page.py      # Login/Signup UI
+│   │   ├── dashboard.py           # Main dashboard UI
+│   │   └── auth_page.py           # Login/Signup UI
 │   ├── services/
-│   │   ├── gemini_client.py  # Google Gemini integration
-│   │   ├── auth_service.py   # Authentication logic
-│   │   ├── content_analyzer.py
-│   │   ├── content_transformer.py
-│   │   ├── security_service.py
-│   │   └── monitoring_service.py
+│   │   ├── gemini_client.py       # Google Gemini integration
+│   │   ├── image_generator.py     # Son of Ashoka image generation
+│   │   ├── auth_service.py        # Authentication logic
+│   │   ├── content_analyzer.py    # Content analysis engine
+│   │   ├── content_transformer.py # Multi-platform transformation
+│   │   ├── security_service.py    # Security and restrictions
+│   │   ├── monitoring_service.py  # Metrics and monitoring
+│   │   ├── youtube_analyzer.py    # YouTube integration
+│   │   ├── document_processor.py  # PDF/DOCX processing
+│   │   └── media_processor.py     # Audio/video processing
 │   ├── database/
-│   │   ├── duckdb_schema.py  # Database schema
-│   │   └── mock_storage.py   # Storage implementations
-│   └── models/
-│       ├── auth.py           # User/Session models
-│       ├── monitoring.py
-│       └── audit.py
+│   │   ├── duckdb_schema.py       # Database schema
+│   │   ├── db_factory.py          # Database factory
+│   │   └── mock_storage.py        # Storage implementations
+│   ├── models/
+│   │   ├── auth.py                # User/Session models
+│   │   ├── monitoring.py          # Monitoring models
+│   │   └── audit.py               # Audit models
+│   └── utils/
+│       ├── logging.py             # Logging configuration
+│       ├── timestamp.py           # Time utilities
+│       └── id_generator.py        # ID generation
 ├── data/
-│   ├── ashoka.duckdb         # Main database
-│   └── uploads/              # Uploaded files
-├── run_dashboard.py          # Main entry point
-├── requirements.txt
-└── .env                      # Environment configuration
+│   ├── ashoka.duckdb              # Main database
+│   └── uploads/                   # Uploaded files
+├── deployment_scripts/
+│   ├── deploy.sh                  # Deployment script
+│   ├── setup_ec2.sh               # EC2 setup
+│   ├── nginx_ashoka.conf          # Nginx configuration
+│   └── supervisor_ashoka.conf     # Supervisor configuration
+├── tests/
+│   ├── test_preservation_properties.py
+│   └── test_websocket_connection_bugfix.py
+├── run_dashboard.py               # Main entry point
+├── requirements.txt               # Python dependencies
+├── start.sh / start.bat           # Automated setup scripts
+└── .env                           # Environment configuration
 ```
 
-## 🎨 UI Theme
+---
 
-### Light Mode
-- **Primary Color**: Teal/Turquoise (#2d8a84, #176a66)
-- **Background**: Warm Beige/Cream (#ded5c4, #efeeeb)
-- **Card Background**: Off-white (#f8f6f2)
-- **Text**: Dark Teal (#102d32, #4e6b71)
-- **Accent**: Teal (#2d8a84) and Soft Blue (#5b93c9)
+## 🎨 UI Theme & Design
 
-### Dark Mode
-- **Primary Color**: Teal (#1f7d78, #145f5b)
-- **Background**: Dark Teal/Gray (#102124, #173037)
-- **Card Background**: Dark Teal (#1c3438)
-- **Text**: Light Cyan (#e7f3f4, #b5cfd1)
-- **Accent**: Light Teal (#70b8b2) and Light Blue (#7caede)
+### Modern Teal/Turquoise Theme
 
-### Status Colors
-- **Success**: Green
-- **Warning**: Orange/Amber
-- **Error**: Red
-- **Info**: Blue
+**Light Mode:**
+- Warm beige/cream backgrounds (#f3efe8)
+- Teal accents (#0f766e, #0b4f6c)
+- Clean card-based layout
+- Glassmorphism effects
+
+**Dark Mode:**
+- Dark teal/gray backgrounds (#0f172a, #1e293b)
+- Light cyan text (#e2e8f0)
+- High contrast for readability
+- Smooth transitions
+
+**Status Colors:**
+- 🟢 Green: Success, high quality
+- 🟠 Orange: Warnings, review needed
+- 🔴 Red: Critical, immediate action
+- 🔵 Blue: Information, neutral
+
+---
 
 ## 📝 Environment Variables
 
-Required in `.env`:
-```
+Create a `.env` file with:
+
+```bash
 # AI Configuration
 GOOGLE_API_KEY=your_gemini_api_key_here
 USE_GEMINI=true
 
 # Database Configuration
-USE_REAL_DYNAMODB=false          # Set to 'true' to use AWS DynamoDB, 'false' for local DuckDB
-DUCKDB_PATH=data/ashoka.duckdb   # Path to local DuckDB file (used when USE_REAL_DYNAMODB=false)
+USE_REAL_DYNAMODB=false          # false = DuckDB (local), true = DynamoDB (AWS)
+DUCKDB_PATH=data/ashoka.duckdb
 
-# AWS Configuration (only needed if USE_REAL_DYNAMODB=true)
+# AWS Configuration (only if USE_REAL_DYNAMODB=true)
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your_aws_access_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-DYNAMODB_TABLE=ashoka_contentint  # Your DynamoDB table name
 
-# Other
-MOCK_MODE=false
+# Session Configuration
+SESSION_TIMEOUT_MINUTES=30
+STORAGE_SECRET=your_secure_random_string_here
+
+# Image Generation (Son of Ashoka API)
+# No configuration needed - uses Cloudflare Workers
 ```
 
-### Database Mode Selection
+### Database Options
 
-**Local Mode (Default - Recommended for Development):**
-```bash
-USE_REAL_DYNAMODB=false
-```
-- Uses DuckDB (local file-based database)
-- No AWS credentials needed
-- No cloud costs
-- Perfect for development and testing
-- Data stored in `data/ashoka.duckdb`
+**Local Mode (Default - Recommended):**
+- ✅ Uses DuckDB (file-based database)
+- ✅ No AWS credentials needed
+- ✅ No cloud costs
+- ✅ Perfect for development
+- ✅ Data stored in `data/ashoka.duckdb`
 
-**Cloud Mode (Optional - For Production):**
-```bash
-USE_REAL_DYNAMODB=true
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your_key
-AWS_SECRET_ACCESS_KEY=your_secret
-DYNAMODB_TABLE=ashoka_contentint
-```
+**Cloud Mode (Optional - Production):**
 - Uses AWS DynamoDB
 - Requires AWS credentials
-- Costs ~$3-90/year depending on usage
 - Provides scalability and high availability
-- Managed infrastructure
+- Estimated cost: $5-20/month
+
+---
 
 ## 🔄 Data Persistence
 
 All data is stored in `data/ashoka.duckdb`:
-- User accounts and sessions
-- Content analysis history
-- Transform history
-- Security logs
-- Monitoring metrics
+- ✅ User accounts and sessions
+- ✅ Content analysis history
+- ✅ Transform history
+- ✅ Security logs and events
+- ✅ Monitoring metrics
+- ✅ Alert history
+- ✅ Quality scores and trends
 
-### Database Storage Architecture
+**Backup Recommendation:**
+```bash
+# Backup database
+cp data/ashoka.duckdb data/ashoka_backup_$(date +%Y%m%d).duckdb
 
-| Database | Tables/Data Stored | Purpose | Cost Impact |
-|----------|-------------------|---------|-------------|
-| **DuckDB** (Local) | • `ashoka_contentint` - Content analysis results<br>• `transform_history` - Platform transformations<br>• `ashoka_users` - User accounts (local mode)<br>• `ashoka_sessions` - User sessions (local mode)<br>• `security_login_logs` - Login attempts<br>• `security_events` - Security events<br>• `content_restrictions` - AI generation restrictions<br>• `operation_metrics` - System metrics<br>• `quality_metrics` - Content quality scores<br>• `risk_assessments` - Risk analysis results<br>• `engagement_analysis` - Engagement metrics<br>• `reactions` - User reactions | Fast local storage for all application data, analysis results, and user information. Used in development and can be used in production. | **FREE** - No cloud costs |
-| **DynamoDB** (AWS Cloud) | • `ashoka_contentint` - Single-table design storing:<br>&nbsp;&nbsp;- Users (diff_data = user_id)<br>&nbsp;&nbsp;- Sessions (diff_data = session_token)<br>&nbsp;&nbsp;- Content (diff_data = content_id)<br>&nbsp;&nbsp;- Audit logs (diff_data = audit_id)<br>&nbsp;&nbsp;- Alerts (diff_data = alert_id)<br>• Uses generic partition key `diff_data` for flexible storage | Cloud-based NoSQL database for production deployments. Provides scalability, high availability, and managed infrastructure. Optional - can use DuckDB instead. | **PAID** - AWS charges:<br>• On-demand: $1.25/million writes, $0.25/million reads<br>• Provisioned: $0.00065/hour per WCU<br>• Storage: $0.25/GB/month<br>**Estimated: $5-20/month for small-medium usage** |
-| **Google Gemini API** | N/A - API calls only | AI content analysis, sentiment detection, content generation, transformation | **PAID** - Per API call:<br>• Input: $0.00025 per 1K chars<br>• Output: $0.00075 per 1K chars |
-| **Whisper AI** (Local) | N/A - Local model | Audio/video transcription | **FREE** - Runs locally |
+# Restore database
+cp data/ashoka_backup_20260306.duckdb data/ashoka.duckdb
+```
 
-**Note:** You can choose between DuckDB (local, free) or DynamoDB (cloud, paid) by setting `USE_REAL_DYNAMODB=true/false` in `.env`. Both work identically from the application's perspective.
-
-### Cost Optimization Strategy
-
-**How Content Restrictions Reduce AI Costs:**
-
-1. **Prevents Unnecessary API Calls**
-   - Blocks restricted prompts BEFORE calling Gemini API
-   - No API charges for blocked content
-   - Example: If "violence" is restricted, prompt "write about violence" is blocked locally without API call
-
-2. **Pre-validation Layer**
-   - Checks happen in Python code (free)
-   - Only valid prompts reach Gemini API (paid)
-   - Reduces wasted API calls by 10-30% depending on restrictions
-
-3. **Admin Control**
-   - Admins define what content should never be generated
-   - Prevents users from generating inappropriate content that would waste API credits
-   - Protects against malicious or accidental expensive API usage
-
-4. **Example Cost Savings:**
-   ```
-   Without Restrictions:
-   - 1000 prompts/day × $0.00025/prompt = $0.25/day
-   - Including 200 inappropriate prompts that get blocked after API call
-   
-   With Restrictions:
-   - 800 valid prompts/day × $0.00025/prompt = $0.20/day
-   - 200 blocked locally (no API call) = $0.00
-   - Savings: $0.05/day = $1.50/month = $18/year
-   ```
-
-5. **Additional Benefits**
-   - Prevents policy violations (saves review costs)
-   - Reduces content moderation needs
-   - Protects brand reputation
-   - Ensures compliance with regulations
-
-**Current AI Usage:**
-- **Gemini API**: Content analysis, sentiment detection, keyword extraction, content generation, transformation
-- **Whisper AI (Local)**: Audio/video transcription (no API costs)
-- **pdfplumber/python-docx (Local)**: Document processing (no API costs)
-
-**Cost Control Features:**
-- ✅ Content restrictions (blocks before API call)
-- ✅ Local processing for media files (Whisper, pdfplumber)
-- ✅ DuckDB local storage (no cloud database costs)
-- ✅ Cached analysis results (avoid re-analyzing same content)
-
-📊 **See [COST_OPTIMIZATION.md](COST_OPTIMIZATION.md) for detailed cost analysis and savings calculations.**
-
-## 🚧 Coming Soon Features
-
-- Audio analysis
-- Image analysis
-- Video analysis
-- Document analysis
-- Image generation
-- Video generation
+---
 
 ## ☁️ AWS EC2 Deployment
 
-### Quick EC2 Access Guide
+### Quick Access Guide
 
-After deploying to EC2, you need to access the dashboard using the EC2 instance's **public IP address**, not localhost.
+After deploying to EC2, access the dashboard using your EC2 instance's public IP:
 
-**Step 1: Get your EC2 Public IP**
-
-Run this command **on your EC2 instance** (via SSH):
+**Get your EC2 Public IP:**
 ```bash
 curl http://checkip.amazonaws.com
 ```
 
-This will return your public IP, for example: `54.123.45.67`
-
-**Step 2: Access the Dashboard**
-
-Open your browser and go to:
+**Access the Dashboard:**
 ```
 http://YOUR_EC2_PUBLIC_IP:8080
 ```
 
-For example: `http://54.123.45.67:8080`
-
-**Step 3: Verify Security Group**
-
-Make sure your EC2 security group allows inbound traffic on port 8080:
+**Security Group Requirements:**
 - Type: Custom TCP
 - Port: 8080
-- Source: 0.0.0.0/0 (or your specific IP for better security)
+- Source: 0.0.0.0/0 (or your specific IP)
 
-### Common Issues
+### Running Dashboard on EC2
 
-**Problem**: "Can't reach this page" or "Connection refused"
-
-**Solutions**:
-1. ✅ Use EC2 public IP, not `localhost` or private IP (172.x.x.x)
-2. ✅ Check security group has port 8080 open
-3. ✅ Verify dashboard is running: `ps aux | grep python`
-4. ✅ Check dashboard logs for errors
-
-**Problem**: Dashboard stops when SSH session closes
-
-**Solution**: Use `screen` or `tmux` to keep it running:
+**Start in background:**
 ```bash
-# Install screen
-sudo apt install screen
+nohup python run_dashboard.py > dashboard.log 2>&1 &
+```
 
-# Start a screen session
-screen -S ashoka
+**View logs:**
+```bash
+tail -f dashboard.log
+```
 
-# Run the dashboard
-python run_dashboard.py
-
-# Detach: Press Ctrl+A then D
-# Reattach later: screen -r ashoka
+**Stop dashboard:**
+```bash
+pkill -f run_dashboard.py
 ```
 
 ### Production Deployment
 
 For production, use Supervisor and Nginx (see `deployment_scripts/README.md`):
-- Supervisor: Keeps the app running and auto-restarts on crashes
-- Nginx: Reverse proxy for better performance and HTTPS support
+- Supervisor: Auto-restart on crashes
+- Nginx: Reverse proxy for HTTPS support
 
 ### Updating EC2 After Code Changes
 
-If you've made changes locally and need to update EC2:
+See [EC2_UPDATE_GUIDE.md](EC2_UPDATE_GUIDE.md) for detailed instructions on pushing changes from local to EC2.
 
-**On Windows (push changes):**
-```bash
-# Stage all changes
-git add .
+---
 
-# Commit with a message
-git commit -m "Fix WebSocket connection and add EC2 deployment guide"
+## 📚 Documentation
 
-# Push to GitHub
-git push origin main
-```
+- **[WORKFLOW.md](WORKFLOW.md)** - Complete platform workflows and use cases
+- **[SCRIPTS.md](SCRIPTS.md)** - Detailed script documentation and usage
+- **[SETUP.md](SETUP.md)** - Detailed setup instructions
+- **[FEATURES.md](FEATURES.md)** - Complete feature documentation
+- **[COST_OPTIMIZATION.md](COST_OPTIMIZATION.md)** - Cost analysis and optimization
+- **[EC2_UPDATE_GUIDE.md](EC2_UPDATE_GUIDE.md)** - EC2 deployment and updates
+- **[AWS_DEPLOYMENT_SUMMARY.md](AWS_DEPLOYMENT_SUMMARY.md)** - AWS deployment overview
 
-**On EC2 (pull changes):**
-```bash
-# Navigate to project directory
-cd ~/aws_hackathon_ai_4_bharat
+---
 
-# Stop the dashboard (if running in screen)
-screen -r ashoka
-# Press Ctrl+C to stop
-# Press Ctrl+A then D to detach
+## 🎯 Use Cases
 
-# Or kill the process
-pkill -f run_dashboard.py
+### For Content Creators
+- Analyze content quality before publishing
+- Transform blog posts for multiple social platforms
+- Generate AI images for content illustration
+- Monitor content performance and quality trends
 
-# Pull latest changes
-git pull origin main
+### For Marketing Teams
+- Ensure brand consistency across platforms
+- Detect policy violations before publishing
+- Track content quality metrics
+- Automate multi-platform content distribution
 
-# Activate virtual environment
-source venv/bin/activate
+### For Enterprises
+- Govern AI-generated content
+- Maintain security and compliance
+- Monitor user activity and access
+- Control content generation with restrictions
 
-# Install any new dependencies
-pip install -r requirements.txt
+### For Developers
+- Integrate AI capabilities into applications
+- Build content governance workflows
+- Monitor AI API usage and costs
+- Implement role-based access control
 
-# Start dashboard in screen
-screen -S ashoka
-python run_dashboard.py
+---
 
-# Wait for "Ready!" then detach: Ctrl+A, then D
-```
+## 🚀 Performance & Scalability
+
+- **Fast Load Times**: Optimized database queries with caching
+- **Async Processing**: Non-blocking AI operations
+- **Auto-Refresh**: Background updates without page reload
+- **Session Management**: Configurable timeout (15-120 minutes)
+- **Scalable Architecture**: Ready for cloud deployment
+
+---
+
+## 🔒 Security Features
+
+- **OTP Authentication**: Time-limited one-time passwords
+- **Session Tokens**: Secure token-based sessions
+- **Password Hashing**: Industry-standard encryption
+- **Role-Based Access**: Granular permissions
+- **Audit Logging**: Complete activity tracking
+- **Content Restrictions**: Admin-controlled blocking
+- **WebSocket Security**: Secure real-time connections
+
+---
 
 ## 📄 License
 
 Built for AWS Hackathon 2026
 
-## 🤝 Support
+---
 
-For issues or questions, please refer to SETUP.md and FEATURES.md for detailed documentation.
+## 🤝 Support & Contributing
+
+For issues, questions, or contributions:
+1. Check the documentation files
+2. Review [WORKFLOW.md](WORKFLOW.md) for usage patterns
+3. See [SCRIPTS.md](SCRIPTS.md) for automation details
+
+---
+
+## 🌟 What Makes Ashoka Special?
+
+1. **All-in-One Platform**: Analysis, generation, transformation, and monitoring in one place
+2. **Cost-Optimized**: Smart use of local processing and Cloudflare Workers
+3. **Enterprise-Ready**: RBAC, security, audit trails, and governance
+4. **User-Friendly**: Intuitive UI with dark mode and responsive design
+5. **Scalable**: Works locally or in the cloud
+6. **Open Architecture**: Easy to extend and customize
+
+---
+
+**Built with ❤️ for intelligent content governance**

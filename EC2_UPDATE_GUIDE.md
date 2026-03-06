@@ -60,12 +60,7 @@ ssh -i "your-key.pem" ubuntu@ec2-xx-xx-xx-xx.compute.amazonaws.com
 **Stop the running dashboard:**
 
 ```bash
-# Option 1: If running in screen
-screen -r ashoka
-# Press Ctrl+C to stop the dashboard
-# Press Ctrl+A then D to detach from screen
-
-# Option 2: Kill the process directly
+# Kill the process
 pkill -f run_dashboard.py
 
 # Verify it's stopped
@@ -102,11 +97,11 @@ cat .env | grep STORAGE_SECRET
 echo "STORAGE_SECRET=$(openssl rand -hex 32)" >> .env
 
 # Start dashboard in screen
-screen -S ashoka
-python run_dashboard.py
+# Start dashboard in background
+nohup python run_dashboard.py > dashboard.log 2>&1 &
 
-# Wait for "Ready! Open http://localhost:8080 in your browser"
-# Then detach: Press Ctrl+A, then press D
+# Verify it's running
+ps aux | grep run_dashboard
 ```
 
 **Verify it's running:**
@@ -123,6 +118,9 @@ curl http://checkip.amazonaws.com
 
 # Test local access
 curl http://localhost:8080
+
+# View logs
+tail -f dashboard.log
 ```
 
 ---
@@ -154,9 +152,7 @@ pkill -f run_dashboard.py
 git pull origin main
 source venv/bin/activate
 pip install -r requirements.txt
-screen -S ashoka
-python run_dashboard.py
-# Ctrl+A then D to detach
+nohup python run_dashboard.py > dashboard.log 2>&1 &
 ```
 
 ---
@@ -203,7 +199,7 @@ git reset --hard origin/main
 Make sure you:
 1. Killed the old process: `pkill -f run_dashboard.py`
 2. Pulled latest code: `git pull origin main`
-3. Restarted in screen: `screen -S ashoka` then `python run_dashboard.py`
+3. Restarted dashboard: `nohup python run_dashboard.py > dashboard.log 2>&1 &`
 4. Cleared browser cache: Ctrl+Shift+R (hard refresh)
 
 ### WebSocket Error Persists
@@ -235,7 +231,7 @@ pkill -f run_dashboard.py
 git pull origin main
 source venv/bin/activate
 pip install -r requirements.txt
-screen -dmS ashoka bash -c 'python run_dashboard.py'
+nohup python run_dashboard.py > dashboard.log 2>&1 &
 echo "Dashboard updated and restarted!"
 echo "Access at: http://$(curl -s http://checkip.amazonaws.com):8080"
 EOF

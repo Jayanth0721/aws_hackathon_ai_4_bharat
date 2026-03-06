@@ -1319,6 +1319,14 @@ class AuthPage:
             app.storage.general["session_token"] = session.session_token
             app.storage.general["user_id"] = self.current_user_id
             app.storage.general["username"] = self.current_username  # Use stored username
+            # Store session start time for accurate timer display
+            # Convert UTC to local time for consistency with dashboard timer
+            from datetime import datetime
+            local_start_time = datetime.now()  # Use local time instead of UTC
+            app.storage.general["session_start_time"] = local_start_time.isoformat()
+            # Store session timeout duration (default 30 minutes from config)
+            from src.config import config
+            app.storage.general["session_timeout"] = config.SESSION_TIMEOUT_MINUTES
             ui.notify("Login successful", type="positive")
             await asyncio.sleep(1)
             ui.navigate.to("/dashboard")

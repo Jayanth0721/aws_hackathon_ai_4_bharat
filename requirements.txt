@@ -31,14 +31,16 @@ nicegui==1.4.0
 
 # Utilities
 python-multipart==0.0.6
+pytz==2024.1
 
 # AI/ML
 google-generativeai>=0.3.0
 
-# Audio/Video processing
-openai-whisper==20231117
+# Video processing (for YouTube only)
 moviepy==1.0.3
-pydub==0.25.1
+
+# YouTube processing
+yt-dlp>=2024.3.10
 
 # Document processing (enhanced)
 pdfplumber==0.11.0

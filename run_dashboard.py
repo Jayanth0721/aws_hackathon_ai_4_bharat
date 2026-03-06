@@ -56,6 +56,14 @@ if __name__ == "__main__":
     print("🔐 Authentication required - Login with OTP")
     print()
     
+    # Initialize database schema once at startup
+    from src.database.duckdb_schema import db_schema
+    print("🔄 Initializing database schema...")
+    db_schema.connect()
+    db_schema.initialize_schema()
+    print("✅ Database schema initialized")
+    print()
+    
     # Create demo users if they don't exist
     from src.services.auth_service import auth_service
     

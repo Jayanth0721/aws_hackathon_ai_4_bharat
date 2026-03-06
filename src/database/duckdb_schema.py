@@ -226,6 +226,71 @@ class DuckDBSchema:
             )
         """)
         
+        # YouTube Query History Table - stores YouTube analysis requests
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS youtube_query_history (
+                query_id VARCHAR PRIMARY KEY,
+                user_id VARCHAR NOT NULL,
+                youtube_url VARCHAR NOT NULL,
+                video_id VARCHAR NOT NULL,
+                analysis_mode VARCHAR NOT NULL,
+                video_title VARCHAR,
+                video_duration INTEGER,
+                video_uploader VARCHAR,
+                video_view_count INTEGER,
+                video_thumbnail_url VARCHAR,
+                transcript TEXT,
+                transcript_language VARCHAR,
+                summary TEXT,
+                sentiment VARCHAR,
+                sentiment_confidence FLOAT,
+                keywords JSON,
+                topics JSON,
+                takeaways JSON,
+                created_at TIMESTAMP NOT NULL,
+                processing_time_seconds FLOAT
+            )
+        """)
+        
+        # YouTube Transcription Cache Table - caches transcriptions
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS youtube_transcription_cache (
+                video_id VARCHAR PRIMARY KEY,
+                transcript TEXT NOT NULL,
+                transcript_language VARCHAR,
+                cached_at TIMESTAMP NOT NULL,
+                access_count INTEGER DEFAULT 1,
+                last_accessed_at TIMESTAMP NOT NULL
+            )
+        """)
+        
+        # YouTube Rate Limits Table - tracks rate limiting
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS youtube_rate_limits (
+                user_id VARCHAR NOT NULL,
+                request_timestamp TIMESTAMP NOT NULL
+            )
+        """)
+        
+        # Feature Usage History Table - tracks user feature access for personalization
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS feature_usage_history (
+                usage_id VARCHAR PRIMARY KEY,
+                user_id VARCHAR NOT NULL,
+                feature_name VARCHAR NOT NULL,
+                accessed_at TIMESTAMP NOT NULL
+            )
+        """)
+        
+        # User Preferences Table - stores user personalization settings
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS user_preferences (
+                user_id VARCHAR PRIMARY KEY,
+                preferences_json JSON NOT NULL,
+                updated_at TIMESTAMP NOT NULL
+            )
+        """)
+        
         # Create indexes for efficient querying
         self._create_indexes()
         
@@ -299,6 +364,38 @@ class DuckDBSchema:
         self.conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_transform_history_user_time 
             ON transform_history(user_id, created_at)
+        """)
+        
+        # YouTube indexes
+        self.conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_youtube_query_user_time 
+            ON youtube_query_history(user_id, created_at)
+        """)
+        
+        self.conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_youtube_query_video 
+            ON youtube_query_history(video_id)
+        """)
+        
+        self.conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_youtube_cache_time 
+            ON youtube_transcription_cache(cached_at)
+        """)
+        
+        self.conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_youtube_rate_limit 
+            ON youtube_rate_limits(user_id, request_timestamp)
+        """)
+        
+        # Feature usage history indexes
+        self.conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_feature_usage_user_time 
+            ON feature_usage_history(user_id, accessed_at DESC)
+        """)
+        
+        self.conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_feature_usage_feature_time 
+            ON feature_usage_history(feature_name, accessed_at DESC)
         """)
     
     def close(self):
