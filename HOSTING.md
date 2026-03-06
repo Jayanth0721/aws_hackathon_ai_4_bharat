@@ -75,7 +75,7 @@ sudo apt-get install -y certbot python3-certbot-nginx
 
 ```bash
 cd /home/ubuntu
-git clone <your-repository-url> ashoka
+git clone https://github.com/Jayanth0721/aws_hackathon_ai_4_bharat.git ashoka
 cd ashoka
 ```
 
