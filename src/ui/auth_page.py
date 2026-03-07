@@ -1286,7 +1286,9 @@ class AuthPage:
     # =========================
 
     def _handle_otp_keyup(self, index):
-        if index < 4:
+        """Handle OTP digit input with controlled auto-focus"""
+        # Only move to next field if current field has a value
+        if index < 4 and self.otp_digits[index].value:
             self.otp_digits[index + 1].run_method("focus")
 
     def _update_timer(self):

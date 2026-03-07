@@ -23,12 +23,17 @@ pip install -r requirements.txt
 ```
 
 Required packages:
-- nicegui>=1.4.0
-- google-generativeai>=0.3.0
+- nicegui>=2.5.0 (CRITICAL: upgraded from 1.4.0 for WebSocket support)
+- google-genai>=0.2.0 (NEW SDK - replaces deprecated google-generativeai)
 - duckdb>=0.9.0
 - bcrypt>=4.0.0
 - python-dotenv>=1.0.0
 - Pillow>=10.0.0
+
+**IMPORTANT SDK MIGRATION:**
+- OLD SDK: `google-generativeai` (deprecated, causes "Gemini client not initialized" errors)
+- NEW SDK: `google-genai` (required for proper functionality)
+- If you have the old SDK installed, uninstall it first: `pip uninstall google-generativeai`
 
 ### 3. Get Google Gemini API Key
 
@@ -46,9 +51,12 @@ cp .env.example .env
 Edit `.env` and add your API key:
 ```
 # Google Gemini Configuration
-GOOGLE_API_KEY=your_actual_api_key_here
+GEMINI_API_KEY=your_actual_api_key_here
+GEMINI_MODEL=gemini-2.5-flash
 USE_GEMINI=true
-MOCK_MODE=false
+
+# NiceGUI Storage Secret (required for WebSocket connections)
+STORAGE_SECRET=your_random_secret_key_here
 
 # Database Configuration
 DUCKDB_PATH=data/ashoka.duckdb
@@ -57,9 +65,9 @@ DUCKDB_PATH=data/ashoka.duckdb
 SESSION_TIMEOUT_MINUTES=30
 OTP_EXPIRATION_MINUTES=5
 
-# DynamoDB Table Names (for MockDynamoDB)
-DYNAMODB_USERS_TABLE=ashoka-users
-DYNAMODB_SESSIONS_TABLE=ashoka-sessions
+# DynamoDB Configuration (optional - for AWS deployment)
+USE_REAL_DYNAMODB=false
+DYNAMODB_TABLE=ashoka_contentint
 ```
 
 ### 5. Initialize Database
@@ -157,8 +165,32 @@ If you see these messages, YouTube analysis is ready to use!
 
 ## Troubleshooting
 
-### Issue: "GOOGLE_API_KEY not found"
-**Solution**: Make sure `.env` file exists and contains valid API key
+### Issue: "GEMINI_API_KEY not found"
+**Solution**: Make sure `.env` file exists and contains valid API key (use GEMINI_API_KEY, not GOOGLE_API_KEY)
+
+### Issue: "Gemini client not initialized" or "ContentAnalyzer initialized without AI"
+**Solution**: 
+- Make sure you have the NEW `google-genai` package installed (not the old `google-generativeai`)
+- Run: `pip uninstall google-generativeai && pip install google-genai`
+- Verify: `pip show google-genai` should show version 1.66.0 or higher
+- Restart the application completely (kill all Python processes)
+- Clear Python cache: `find . -type d -name "__pycache__" -exec rm -rf {} +`
+
+**Why this happens:**
+- The old `google-generativeai` SDK (v0.8.6) is deprecated
+- The new `google-genai` SDK (v1.66.0+) uses different imports: `from google import genai`
+- Having the wrong SDK causes silent import failures, setting `GEMINI_AVAILABLE = False`
+
+### Issue: "Model not found" or "404 NOT_FOUND"
+**Solution**:
+- Use a valid model name in `.env`: `GEMINI_MODEL=gemini-2.5-flash`
+- Available models: gemini-2.5-flash, gemini-2.5-pro, gemini-2.0-flash, gemini-2.0-flash-001
+- Do NOT use: gemini-2.0-flash-exp (experimental model, not available in production API)
+
+**To verify available models:**
+```python
+python -c "from google import genai; import os; from dotenv import load_dotenv; load_dotenv(); client = genai.Client(api_key=os.getenv('GEMINI_API_KEY')); models = client.models.list(); [print(f'  - {m.name}') for m in models if 'gemini' in m.name.lower()]"
+```
 
 ### Issue: "Module not found"
 **Solution**: Run `pip install -r requirements.txt` again

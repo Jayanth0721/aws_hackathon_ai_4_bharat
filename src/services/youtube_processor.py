@@ -335,7 +335,17 @@ class YouTubeProcessor:
         except Exception as e:
             error_msg = str(e).lower()
             
-            # Categorize errors
+            # Check for bot detection first
+            if self._is_bot_detection_error(error_msg):
+                logger.warning(f"Bot detection error for URL: {url}")
+                return {
+                    "success": False,
+                    "error": "YouTube has detected automated access and blocked this request. Please try again in a few minutes or use a different video.",
+                    "error_code": "BOT_DETECTION",
+                    "file_path": None
+                }
+            
+            # Categorize other errors
             if 'disk' in error_msg or 'space' in error_msg:
                 return {
                     "success": False,
@@ -406,6 +416,30 @@ class YouTubeProcessor:
             }
         
         return result
+
+    def _is_bot_detection_error(self, error_msg: str) -> bool:
+        """
+        Detect if error is due to bot detection/blocking
+
+        Args:
+            error_msg: Error message from yt-dlp (lowercased)
+
+        Returns:
+            True if error indicates bot detection
+        """
+        bot_keywords = [
+            'bot',
+            'blocked',
+            'captcha',
+            'too many requests',
+            'rate limit',
+            'forbidden',
+            '429',
+            'sign in to confirm',
+            'unusual traffic'
+        ]
+
+        return any(keyword in error_msg for keyword in bot_keywords)
 
 
 # Global instance

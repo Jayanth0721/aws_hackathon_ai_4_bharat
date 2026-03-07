@@ -206,7 +206,7 @@ Open http://localhost:8080 in your browser.
 ## 🛠️ Technology Stack
 
 ### Frontend
-- **NiceGUI**: Python-based reactive web framework
+- **NiceGUI**: Python-based reactive web framework (v2.5.0+ required for WebSocket support)
 - **Tailwind CSS**: Modern utility-first styling
 - **Custom Theme**: Teal/cyan gradient with dark mode support
 
@@ -216,6 +216,7 @@ Open http://localhost:8080 in your browser.
   - Text generation and transformation
   - Quality scoring and keyword extraction
   - Audio/video transcription and analysis
+  - **SDK**: `google-genai` v1.66.0+ (NEW SDK, replaces deprecated `google-generativeai`)
 - **Son of Ashoka API** (Cloudflare Workers):
   - AI image generation
   - Cost-optimized processing
@@ -360,6 +361,7 @@ Create a `.env` file with:
 ```bash
 # AI Configuration
 GOOGLE_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-2.5-flash
 USE_GEMINI=true
 
 # Database Configuration
@@ -378,6 +380,12 @@ STORAGE_SECRET=your_secure_random_string_here
 # Image Generation (Son of Ashoka API)
 # No configuration needed - uses Cloudflare Workers
 ```
+
+**IMPORTANT NOTES:**
+- Use `GEMINI_API_KEY` (not `GOOGLE_API_KEY`) for the Gemini API key
+- Use `GEMINI_MODEL=gemini-2.5-flash` (available models: gemini-2.5-flash, gemini-2.5-pro, gemini-2.0-flash)
+- Do NOT use `gemini-2.0-flash-exp` (experimental model, not available in production)
+- `STORAGE_SECRET` is REQUIRED for NiceGUI WebSocket connections
 
 ### Database Options
 
@@ -415,6 +423,39 @@ cp data/ashoka.duckdb data/ashoka_backup_$(date +%Y%m%d).duckdb
 # Restore database
 cp data/ashoka_backup_20260306.duckdb data/ashoka.duckdb
 ```
+
+---
+
+## 🔧 Common Issues & Quick Fixes
+
+### WebSocket Connection Failed
+**Symptom**: Page loads but buttons don't work
+
+**Fix**: Upgrade NiceGUI to 2.5.0+
+```bash
+pip uninstall nicegui && pip install "nicegui>=2.5.0"
+find . -type d -name "__pycache__" -exec rm -rf {} +
+```
+
+### Gemini API Not Working
+**Symptom**: "Gemini client not initialized" error
+
+**Fix**: Install correct SDK
+```bash
+pip uninstall google-generativeai -y
+pip install google-genai
+find . -type d -name "__pycache__" -exec rm -rf {} +
+```
+
+### Model Not Found Error
+**Symptom**: 404 NOT_FOUND when generating content
+
+**Fix**: Use correct model name in `.env`
+```bash
+GEMINI_MODEL=gemini-2.5-flash
+```
+
+For detailed troubleshooting, see [SETUP.md](SETUP.md) and [HOSTING.md](HOSTING.md).
 
 ---
 

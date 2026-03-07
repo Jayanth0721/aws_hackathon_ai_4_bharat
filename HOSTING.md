@@ -593,13 +593,37 @@ sudo service nginx reload
 **Symptoms:**
 - Page loads but buttons don't work
 - Browser console shows: `WebSocket connection to 'ws://...' failed`
-- Error: `transport=websocket failed`
+- Error: `Expected ASGI message 'websocket.accept' or 'websocket.close', but got 'http.response.start'`
 - No interactivity on the page
 
-**Root Cause:**
-NiceGUI requires WebSocket connections for all UI interactivity. If WebSockets fail, the page loads but nothing works.
+**Root Causes:**
+1. **NiceGUI version too old** (most common)
+2. Missing `STORAGE_SECRET` in .env
+3. Nginx configuration missing `proxy_buffering off`
 
-**Solution 1: Fix Nginx Configuration (if using nginx)**
+**Solution 1: Upgrade NiceGUI (CRITICAL)**
+
+The old NiceGUI 1.4.0 doesn't properly support the `storage_secret` parameter, causing WebSocket failures.
+
+```bash
+# Uninstall old version
+pip uninstall nicegui
+
+# Install new version
+pip install "nicegui>=2.5.0"
+
+# Verify version
+pip show nicegui  # Should show 2.5.0 or higher
+
+# Clear Python cache
+find . -type d -name "__pycache__" -exec rm -rf {} +
+
+# Restart application
+pkill -9 -f run_dashboard.py
+nohup python run_dashboard.py > ashoka.log 2>&1 &
+```
+
+**Solution 2: Fix Nginx Configuration (if using nginx)**
 
 The nginx config MUST include `proxy_buffering off` for WebSocket support:
 
@@ -628,42 +652,22 @@ sudo nginx -t
 sudo service nginx restart
 ```
 
-**Solution 2: Test Without Nginx First**
-
-Stop nginx and test the app directly on port 8080:
-
-```bash
-# Stop nginx
-sudo service nginx stop
-
-# Make sure app is running
-ps aux | grep python
-
-# If not running, start it
-cd ~/ashoka
-source venv/bin/activate
-nohup venv/bin/python run_dashboard.py > ashoka.log 2>&1 &
-
-# Test at http://your-ec2-ip:8080 or http://ashoka-ai.hopto.org:8080
-```
-
-If port 8080 works but nginx doesn't, the issue is nginx configuration.
-
 **Solution 3: Check STORAGE_SECRET**
 
 Verify your .env file has STORAGE_SECRET set:
 ```bash
-cat ~/ashoka/.env | grep STORAGE_SECRET
+cat .env | grep STORAGE_SECRET
 ```
 
 If missing, add it:
 ```bash
-echo "STORAGE_SECRET=$(openssl rand -hex 32)" >> ~/ashoka/.env
+echo "STORAGE_SECRET=$(openssl rand -hex 32)" >> .env
 ```
 
 Then restart the app:
 ```bash
-sudo supervisorctl restart ashoka
+pkill -9 -f run_dashboard.py
+nohup python run_dashboard.py > ashoka.log 2>&1 &
 ```
 
 **Verify WebSocket headers:**
@@ -707,6 +711,71 @@ sudo supervisorctl restart ashoka
 
 # Restart Nginx
 sudo service nginx restart
+```
+
+### Issue: Gemini API Not Working After Deployment
+
+**Symptoms:**
+- Login works but AI generation fails
+- Error: "Gemini client not initialized. Check API key and installation."
+- Logs show: "ContentTransformer initialized without AI"
+- Logs show: "google-generativeai package not installed"
+
+**Root Cause:**
+Wrong Gemini SDK installed (old `google-generativeai` instead of new `google-genai`)
+
+**Solution:**
+```bash
+# 1. Stop the application
+sudo supervisorctl stop ashoka
+# OR if running with nohup:
+pkill -9 -f run_dashboard.py
+
+# 2. Activate virtual environment
+cd ~/ashoka
+source venv/bin/activate
+
+# 3. Uninstall old SDK
+pip uninstall google-generativeai -y
+
+# 4. Install new SDK
+pip install google-genai
+
+# 5. Verify installation
+pip show google-genai  # Should show version 1.66.0+
+
+# 6. Test the SDK directly
+python -c "from google import genai; import os; from dotenv import load_dotenv; load_dotenv(); client = genai.Client(api_key=os.getenv('GEMINI_API_KEY')); response = client.models.generate_content(model='gemini-2.5-flash', contents='Say hello'); print(f'SUCCESS: {response.text}')"
+
+# 7. Clear Python cache
+find . -type d -name "__pycache__" -exec rm -rf {} +
+
+# 8. Restart application
+sudo supervisorctl start ashoka
+# OR if using nohup:
+nohup python run_dashboard.py > ashoka.log 2>&1 &
+
+# 9. Check logs
+tail -50 ashoka.log | grep -E "Gemini|ContentAnalyzer|ContentTransformer"
+```
+
+**Expected log output after fix:**
+```
+2026-03-07 06:02:32 - ashoka - INFO - Gemini client initialized: model=gemini-2.5-flash
+2026-03-07 06:02:32 - ashoka - INFO - ContentTransformer initialized with Google Gemini
+2026-03-07 06:02:34 - ashoka - INFO - ContentAnalyzer initialized with Google Gemini
+```
+
+**If still not working:**
+```bash
+# Check .env file has correct API key
+cat .env | grep GEMINI_API_KEY
+
+# Verify model name is correct
+cat .env | grep GEMINI_MODEL  # Should be gemini-2.5-flash
+
+# Test API key directly
+python -c "from google import genai; client = genai.Client(api_key='YOUR_API_KEY_HERE'); print(client.models.list())"
 ```
 
 ### Issue: High Memory Usage
@@ -814,3 +883,176 @@ For issues or questions:
 ---
 
 **Your Ashoka platform is now live at https://ashoka-ai.hopto.org! 🚀**
+
+
+## AWS EC2 Deployment with Nginx
+
+### Prerequisites
+- Ubuntu EC2 instance
+- Python 3.8+ installed
+- Domain name (optional, can use IP)
+
+### 1. Install System Dependencies
+
+```bash
+sudo apt update
+sudo apt install -y nginx net-tools python3-pip python3-venv
+```
+
+### 2. Clone and Setup Application
+
+```bash
+cd ~
+git clone your-repo-url
+cd your-app-directory
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### 3. Configure Environment
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+Update with your settings:
+```
+GEMINI_API_KEY=your_api_key_here
+GEMINI_MODEL=gemini-2.5-flash
+STORAGE_SECRET=your_random_secret_here
+USE_REAL_DYNAMODB=true  # If using AWS DynamoDB
+```
+
+### 4. Configure Nginx
+
+```bash
+sudo tee /etc/nginx/sites-available/ashoka << 'EOF'
+server {
+    listen 80;
+    server_name your-domain.com;  # Replace with your domain or IP
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_buffering off;  # Required for WebSocket support
+    }
+}
+EOF
+
+# Enable site
+sudo ln -sf /etc/nginx/sites-available/ashoka /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+
+# Test and start
+sudo nginx -t
+sudo systemctl start nginx
+sudo systemctl enable nginx
+```
+
+### 5. Run Application
+
+```bash
+cd ~/your-app-directory
+source venv/bin/activate
+nohup python run_dashboard.py > ashoka.log 2>&1 &
+```
+
+### 6. Verify Deployment
+
+```bash
+# Check if app is running
+ps aux | grep python
+
+# Check if Nginx is running
+sudo systemctl status nginx
+
+# Check ports
+sudo netstat -tlnp | grep :80    # Nginx
+sudo netstat -tlnp | grep :8080  # Your app
+
+# View logs
+tail -f ashoka.log
+```
+
+### 7. Access Application
+
+- Via domain: `http://your-domain.com`
+- Via IP: `http://your-ec2-ip`
+
+### EC2 Security Group Configuration
+
+Required inbound rules:
+- Port 80 (HTTP): 0.0.0.0/0
+- Port 443 (HTTPS): 0.0.0.0/0 (if using SSL)
+- Port 22 (SSH): Your IP only
+- Port 8080: DO NOT OPEN (localhost only)
+
+### Troubleshooting
+
+#### Domain not working but IP works
+- Check DNS settings
+- Verify domain points to EC2 IP
+- Check Nginx server_name matches your domain
+
+#### WebSocket connection errors
+- Ensure `proxy_buffering off` in Nginx config
+- Verify NiceGUI version is 2.5.0+
+- Check STORAGE_SECRET is set in .env
+
+#### Application not starting
+- Check logs: `tail -100 ashoka.log`
+- Verify Python packages: `pip list | grep google-genai`
+- Clear cache: `find . -type d -name "__pycache__" -exec rm -rf {} +`
+
+#### Nginx errors
+- Test config: `sudo nginx -t`
+- Check logs: `sudo tail -f /var/log/nginx/error.log`
+- Restart: `sudo systemctl restart nginx`
+
+### Stopping/Restarting Application
+
+```bash
+# Stop application
+pkill -9 -f run_dashboard.py
+
+# Start application
+cd ~/your-app-directory
+source venv/bin/activate
+nohup python run_dashboard.py > ashoka.log 2>&1 &
+
+# Restart Nginx
+sudo systemctl restart nginx
+```
+
+### Updating Application
+
+```bash
+# Stop app
+pkill -9 -f run_dashboard.py
+
+# Pull latest changes
+cd ~/your-app-directory
+git pull
+
+# Update dependencies
+source venv/bin/activate
+pip install -r requirements.txt --upgrade
+
+# Clear cache
+find . -type d -name "__pycache__" -exec rm -rf {} +
+
+# Restart
+nohup python run_dashboard.py > ashoka.log 2>&1 &
+```

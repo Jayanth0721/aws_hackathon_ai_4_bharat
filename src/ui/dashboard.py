@@ -27,7 +27,6 @@ class AshokaGovDashboard:
         self.current_username = 'demo'
         self.current_email = 'demo@ashoka.ai'
         self.current_analysis = None
-        self.dark_mode = False
         self.uploaded_file_path = None
         
         # Processing flags to prevent auto-refresh interference during long operations
@@ -766,12 +765,6 @@ class AshokaGovDashboard:
                         ui.icon('schedule', size='sm').classes('text-white')
                         self.timer_label = ui.label('30:00').classes('timer-text font-mono text-lg font-bold')
                 
-                # Dark mode toggle
-                self.theme_toggle = ui.button(
-                    icon='dark_mode',
-                    on_click=self._toggle_theme
-                ).props('flat round').classes('text-white ml-2')
-                
                 with ui.button(icon='account_circle').props('flat round').classes('text-white'):
                     with ui.menu():
                         ui.menu_item(self.t('profile'), on_click=self._show_profile_dialog)
@@ -812,6 +805,9 @@ class AshokaGovDashboard:
                         self.security_tab = None
                         if self.current_user_role == 'admin':
                             self.security_tab = ui.tab(self.t('security'), icon='security')
+                        
+                        # Help tab - accessible to ALL users
+                        self.help_tab = ui.tab('Help & Support', icon='help')
 
                     with ui.column().classes('w-full mt-4 gap-2'):
                         ui.separator()
@@ -850,17 +846,10 @@ class AshokaGovDashboard:
                         if self.security_tab is not None:
                             with ui.tab_panel(self.security_tab):
                                 self._create_security_panel()
-    
-    def _toggle_theme(self):
-        """Toggle between light and dark mode"""
-        self.dark_mode = not self.dark_mode
-        
-        if self.dark_mode:
-            ui.run_javascript('document.body.classList.add("dark-mode")')
-            self.theme_toggle.props('icon=light_mode')
-        else:
-            ui.run_javascript('document.body.classList.remove("dark-mode")')
-            self.theme_toggle.props('icon=dark_mode')
+                        
+                        # Help Panel - accessible to all users
+                        with ui.tab_panel(self.help_tab):
+                            self._create_help_panel()
     
     def _handle_logout(self):
         """Handle user logout - clear session and redirect to login"""
@@ -1014,15 +1003,6 @@ class AshokaGovDashboard:
         ui.notify('Session extended by 30 minutes', type='positive')
         logger.info(f"Session extended at: {self.session_start_time}")
     
-    def _toggle_theme_old(self):
-        
-        if self.dark_mode:
-            ui.run_javascript('document.body.classList.add("dark-mode")')
-            self.theme_toggle.props('icon=light_mode')
-        else:
-            ui.run_javascript('document.body.classList.remove("dark-mode")')
-            self.theme_toggle.props('icon=dark_mode')
-
     def _get_profile_stats(self):
         """Get compact profile stats for the current user."""
         stats = {
@@ -1395,7 +1375,6 @@ class AshokaGovDashboard:
                                 ui.label(feat['name']).classes('text-xl font-bold feature-card-title')
                             with ui.column().classes('gap-2 mt-auto text-center'):
                                 ui.label(f"Last used: {feat['last_used']}").classes('text-sm feature-card-subtitle')
-                                ui.label(f"{feat['usage_count']} times used").classes('text-base feature-card-text font-semibold')
 
                 create_feature_card(feature)
 
@@ -2901,6 +2880,164 @@ class AshokaGovDashboard:
             with self.query_history_container:
                 ui.label(f'Error loading query history: {str(e)}').classes('text-red-600')
     
+    def _create_help_panel(self):
+        """Create help and support panel accessible to all users"""
+        with ui.column().classes('w-full gap-4'):
+            # Header
+            with ui.card().classes('w-full bg-gradient-to-r from-teal-500 to-cyan-600 text-white'):
+                with ui.row().classes('items-center gap-3 mb-2'):
+                    ui.icon('help_center', size='xl')
+                    ui.label('Help & Support').classes('text-3xl font-bold')
+                ui.label('Get assistance with the Ashoka GenAI Governance Platform').classes('text-lg opacity-90')
+            
+            # Quick Help Section
+            with ui.card().classes('w-full'):
+                with ui.row().classes('items-center gap-2 mb-3'):
+                    ui.icon('info', size='md').classes('text-blue-600')
+                    ui.label('Quick Help').classes('text-xl font-semibold')
+                
+                with ui.column().classes('gap-3'):
+                    with ui.expansion('Getting Started', icon='rocket_launch').classes('w-full'):
+                        ui.label('Welcome to Ashoka! Here are the key features:').classes('font-semibold mb-2')
+                        ui.html('''
+                            <ul class="list-disc pl-5 space-y-1">
+                                <li><strong>Content Intelligence:</strong> Analyze text, images, videos, documents, and YouTube content</li>
+                                <li><strong>AI Content Generator:</strong> Generate text and images using Google Gemini AI</li>
+                                <li><strong>Multi-Platform Transformer:</strong> Transform content for LinkedIn, Twitter, Instagram, Facebook, and more</li>
+                                <li><strong>Monitoring:</strong> Track quality metrics, performance trends, and system health</li>
+                                <li><strong>Alerts:</strong> Receive notifications for quality issues and risks</li>
+                            </ul>
+                        ''')
+                    
+                    with ui.expansion('Common Issues', icon='troubleshoot').classes('w-full'):
+                        ui.html('''
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="font-semibold">Q: Analysis is not working</p>
+                                    <p class="text-gray-600">A: Ensure you have a valid Gemini API key configured. Check the logs for any error messages.</p>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Q: YouTube download failing</p>
+                                    <p class="text-gray-600">A: YouTube may have detected automated access. Try again in a few minutes or use a different video.</p>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Q: Copy to clipboard not working</p>
+                                    <p class="text-gray-600">A: Clipboard access requires HTTPS or localhost. Ensure you're accessing the dashboard securely.</p>
+                                </div>
+                            </div>
+                        ''')
+                    
+                    with ui.expansion('Feature Access by Role', icon='admin_panel_settings').classes('w-full'):
+                        ui.html('''
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b">
+                                        <th class="text-left py-2">Feature</th>
+                                        <th class="text-center py-2">User</th>
+                                        <th class="text-center py-2">Creator</th>
+                                        <th class="text-center py-2">Admin</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b">
+                                        <td class="py-2">Content Analysis</td>
+                                        <td class="text-center">✓</td>
+                                        <td class="text-center">✓</td>
+                                        <td class="text-center">✓</td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="py-2">Content Generation</td>
+                                        <td class="text-center">-</td>
+                                        <td class="text-center">✓</td>
+                                        <td class="text-center">✓</td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="py-2">Content Transformation</td>
+                                        <td class="text-center">-</td>
+                                        <td class="text-center">✓</td>
+                                        <td class="text-center">✓</td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="py-2">Monitoring & Alerts</td>
+                                        <td class="text-center">✓</td>
+                                        <td class="text-center">✓</td>
+                                        <td class="text-center">✓</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2">Security Dashboard</td>
+                                        <td class="text-center">-</td>
+                                        <td class="text-center">-</td>
+                                        <td class="text-center">✓</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        ''')
+            
+            # Contact Support Section
+            with ui.card().classes('w-full bg-teal-50'):
+                with ui.row().classes('items-center gap-2 mb-3'):
+                    ui.icon('contact_support', size='md').classes('text-teal-600')
+                    ui.label('Contact Support').classes('text-xl font-semibold')
+                
+                ui.label('Need personalized assistance? Reach out to our support team:').classes('text-gray-700 mb-4')
+                
+                with ui.column().classes('gap-4'):
+                    # Contact 1
+                    with ui.card().classes('w-full bg-white border-l-4 border-teal-500'):
+                        with ui.row().classes('items-center gap-3'):
+                            ui.icon('person', size='lg').classes('text-teal-600')
+                            with ui.column().classes('gap-1'):
+                                ui.label('Jayanth').classes('text-lg font-semibold')
+                                ui.label('Technical Support Lead').classes('text-sm text-gray-600')
+                        with ui.row().classes('items-center gap-2 mt-2'):
+                            ui.icon('phone', size='sm').classes('text-gray-600')
+                            ui.label('+91 8317465997').classes('text-base')
+                            ui.button(
+                                icon='content_copy',
+                                on_click=lambda: self._copy_to_clipboard('+91 8317465997')
+                            ).props('flat dense round').classes('ml-2')
+                    
+                    # Contact 2
+                    with ui.card().classes('w-full bg-white border-l-4 border-cyan-500'):
+                        with ui.row().classes('items-center gap-3'):
+                            ui.icon('person', size='lg').classes('text-cyan-600')
+                            with ui.column().classes('gap-1'):
+                                ui.label('Loka Ram Kalyan').classes('text-lg font-semibold')
+                                ui.label('Platform Support Specialist').classes('text-sm text-gray-600')
+                        with ui.row().classes('items-center gap-2 mt-2'):
+                            ui.icon('phone', size='sm').classes('text-gray-600')
+                            ui.label('+91 93928 79201').classes('text-base')
+                            ui.button(
+                                icon='content_copy',
+                                on_click=lambda: self._copy_to_clipboard('+91 93928 79201')
+                            ).props('flat dense round').classes('ml-2')
+                
+                ui.label('📧 Email: support@ashoka-platform.ai').classes('text-sm text-gray-600 mt-3')
+                ui.label('⏰ Support Hours: Monday - Friday, 9:00 AM - 6:00 PM IST').classes('text-sm text-gray-600')
+            
+            # Documentation Section
+            with ui.card().classes('w-full'):
+                with ui.row().classes('items-center gap-2 mb-3'):
+                    ui.icon('menu_book', size='md').classes('text-purple-600')
+                    ui.label('Documentation').classes('text-xl font-semibold')
+                
+                with ui.column().classes('gap-2'):
+                    ui.label('📖 User Guide: Complete guide to using all features').classes('text-sm')
+                    ui.label('🔧 API Documentation: Technical reference for developers').classes('text-sm')
+                    ui.label('🎓 Video Tutorials: Step-by-step video guides').classes('text-sm')
+                    ui.label('❓ FAQ: Frequently asked questions and answers').classes('text-sm')
+            
+            # System Information
+            with ui.card().classes('w-full bg-gray-50'):
+                with ui.row().classes('items-center gap-2 mb-3'):
+                    ui.icon('info', size='md').classes('text-gray-600')
+                    ui.label('System Information').classes('text-xl font-semibold')
+                
+                with ui.column().classes('gap-1 text-sm'):
+                    ui.label(f'Platform Version: 1.0.0').classes('text-gray-700')
+                    ui.label(f'Your Role: {self.current_user_role.title()}').classes('text-gray-700')
+                    ui.label(f'Logged in as: {self.current_user}').classes('text-gray-700')
+    
     def _refresh_security_logs(self, show_notification: bool = True):
         """Refresh security logs with real data from DuckDB"""
         from src.services.security_service import security_service
@@ -3575,12 +3712,16 @@ class AshokaGovDashboard:
                         ).props('flat').classes('mt-3')
     
     def _copy_to_clipboard(self, text: str):
-        """Copy text to clipboard"""
-        payload = json.dumps(text)
-        ui.run_javascript(
-            f"navigator.clipboard.writeText({payload}).then(() => {{ console.log('Copied to clipboard'); }});"
-        )
-        ui.notify('Copied to clipboard!', type='positive')
+        """Copy text to clipboard with proper escaping and error handling"""
+        try:
+            payload = json.dumps(text)
+            ui.run_javascript(
+                f"navigator.clipboard.writeText({payload}).then(() => {{ console.log('Copied to clipboard'); }}).catch((err) => {{ console.error('Clipboard copy failed:', err); }});"
+            )
+            ui.notify('Copied to clipboard!', type='positive')
+        except Exception as e:
+            logger.error(f"Clipboard operation failed: {e}")
+            ui.notify('Failed to copy to clipboard', type='negative')
     
     def _show_coming_soon_dialog(self, feature_name: str):
         """Show coming soon dialog for features under development"""
@@ -4720,18 +4861,13 @@ class AshokaGovDashboard:
                             with ui.column().classes('w-full items-center'):
                                 ui.image(f'data:image/png;base64,{result["image_data"]}').classes('max-w-full rounded-lg shadow-lg')
                             
-                            # Action buttons
-                            with ui.row().classes('gap-2 mt-3'):
-                                ui.button(
-                                    'Generate Another',
-                                    icon='auto_awesome',
-                                    on_click=lambda: self._generate_ai_content()
-                                ).props('color=primary')
+                            # Action button
+                            with ui.row().classes('gap-2 mt-3 justify-center'):
                                 ui.button(
                                     'Download Image',
                                     icon='download',
                                     on_click=lambda: self._download_generated_image(result['image_bytes'], prompt)
-                                ).props('flat')
+                                ).props('color=primary')
                     
                     ui.notify('Image generated successfully!', type='positive')
                 else:
@@ -4775,9 +4911,16 @@ class AshokaGovDashboard:
             ui.notify(f'Generation failed: {str(e)}', type='negative')
     
     def _copy_to_clipboard(self, text: str):
-        """Copy text to clipboard"""
-        ui.run_javascript(f'navigator.clipboard.writeText({json.dumps(text)})')
-        ui.notify('Copied to clipboard!', type='positive')
+        """Copy text to clipboard with proper escaping and error handling"""
+        try:
+            payload = json.dumps(text)
+            ui.run_javascript(
+                f"navigator.clipboard.writeText({payload}).then(() => {{ console.log('Copied to clipboard'); }}).catch((err) => {{ console.error('Clipboard copy failed:', err); }});"
+            )
+            ui.notify('Copied to clipboard!', type='positive')
+        except Exception as e:
+            logger.error(f"Clipboard operation failed: {e}")
+            ui.notify('Failed to copy to clipboard', type='negative')
     
     def _download_generated_image(self, image_bytes: bytes, prompt: str):
         """Download generated image"""

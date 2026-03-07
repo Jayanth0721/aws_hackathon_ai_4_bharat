@@ -5,7 +5,8 @@ from typing import Optional, Dict, List, Any
 from datetime import datetime
 
 try:
-    import google.generativeai as genai
+    from google import genai
+    from google.genai import types
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
@@ -22,7 +23,7 @@ class GeminiClient:
         self.model_name = os.getenv('GEMINI_MODEL', 'gemini-2.0-flash-exp')
         
         if not GEMINI_AVAILABLE:
-            logger.warning("google-generativeai package not installed. Run: pip install google-generativeai")
+            logger.warning("google-genai package not installed. Run: pip install google-genai")
             self.client = None
             return
         
@@ -32,8 +33,7 @@ class GeminiClient:
             return
         
         try:
-            genai.configure(api_key=self.api_key)
-            self.client = genai.GenerativeModel(self.model_name)
+            self.client = genai.Client(api_key=self.api_key)
             logger.info(f"Gemini client initialized: model={self.model_name}")
         except Exception as e:
             logger.error(f"Failed to initialize Gemini client: {e}")
@@ -42,6 +42,20 @@ class GeminiClient:
     def is_available(self) -> bool:
         """Check if Gemini client is available"""
         return self.client is not None and GEMINI_AVAILABLE
+    
+    def generate_text(self, prompt: str, temperature: float = 0.7) -> str:
+        """
+        Generate text using Gemini (simple text generation)
+        
+        Args:
+            prompt: User prompt
+            temperature: Sampling temperature
+            
+        Returns:
+            Generated text string
+        """
+        result = self.generate_content(prompt=prompt, temperature=temperature)
+        return result.get('text', '')
     
     def generate_content(
         self,
@@ -73,16 +87,15 @@ class GeminiClient:
                 full_prompt = prompt
             
             # Generate content
-            generation_config = {
-                'temperature': temperature,
-                'top_p': 0.95,
-                'top_k': 40,
-                'max_output_tokens': 4096,
-            }
-            
-            response = self.client.generate_content(
-                full_prompt,
-                generation_config=generation_config
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=full_prompt,
+                config=types.GenerateContentConfig(
+                    temperature=temperature,
+                    top_p=0.95,
+                    top_k=40,
+                    max_output_tokens=4096,
+                )
             )
             
             # Calculate metrics
@@ -317,12 +330,11 @@ Apply the specified style, tone, and constraints."""
             raise Exception("Gemini client not initialized. Check API key and installation.")
         
         try:
-            from PIL import Image
-            import io
+            import base64
             start_time = datetime.now()
             
-            # Convert bytes to PIL Image
-            image = Image.open(io.BytesIO(image_data))
+            # Encode image to base64
+            image_base64 = base64.b64encode(image_data).decode('utf-8')
             
             # Create vision prompt
             system_instruction = """You are an expert image analyst. Analyze the provided image and return 
@@ -339,19 +351,22 @@ Apply the specified style, tone, and constraints."""
             
             Return ONLY valid JSON, no additional text or markdown."""
             
-            full_prompt = system_instruction + "\n\n" + prompt
-            
             # Generate content with image
-            generation_config = {
-                'temperature': 0.3,
-                'top_p': 0.95,
-                'top_k': 40,
-                'max_output_tokens': 2048,
-            }
-            
-            response = self.client.generate_content(
-                [full_prompt, image],
-                generation_config=generation_config
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=[
+                    types.Part.from_bytes(
+                        data=image_data,
+                        mime_type="image/jpeg"  # Gemini supports jpeg, png, webp
+                    ),
+                    system_instruction + "\n\n" + prompt
+                ],
+                config=types.GenerateContentConfig(
+                    temperature=0.3,
+                    top_p=0.95,
+                    top_k=40,
+                    max_output_tokens=2048,
+                )
             )
             
             # Calculate metrics
