@@ -283,5 +283,12 @@ class MockS3:
 
 
 # Global mock instances
-mock_dynamodb = MockDynamoDB()
+#mock_dynamodb = MockDynamoDB()
+mock_dynamodb = None
+
+def get_mock_dynamodb():
+    global mock_dynamodb
+    if mock_dynamodb is None:
+        mock_dynamodb = MockDynamoDB()
+    return mock_dynamodb
 mock_s3 = MockS3()

@@ -27,7 +27,7 @@ bcrypt==4.1.2
 textstat==0.7.3
 
 # Web framework (NiceGUI includes FastAPI and uvicorn)
-nicegui==1.4.0
+nicegui>=2.5.0
 
 # Utilities
 python-multipart==0.0.6

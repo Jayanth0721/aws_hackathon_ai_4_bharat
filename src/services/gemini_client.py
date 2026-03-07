@@ -5,8 +5,7 @@ from typing import Optional, Dict, List, Any
 from datetime import datetime
 
 try:
-    from google import genai
-    from google.genai import types
+    import google.generativeai as genai
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
@@ -20,10 +19,10 @@ class GeminiClient:
     def __init__(self):
         """Initialize Gemini client"""
         self.api_key = os.getenv('GEMINI_API_KEY', '')
-        self.model_name = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
+        self.model_name = os.getenv('GEMINI_MODEL', 'gemini-2.0-flash-exp')
         
         if not GEMINI_AVAILABLE:
-            logger.warning("google-genai package not installed. Run: pip install google-genai")
+            logger.warning("google-generativeai package not installed. Run: pip install google-generativeai")
             self.client = None
             return
         
@@ -33,7 +32,8 @@ class GeminiClient:
             return
         
         try:
-            self.client = genai.Client(api_key=self.api_key)
+            genai.configure(api_key=self.api_key)
+            self.client = genai.GenerativeModel(self.model_name)
             logger.info(f"Gemini client initialized: model={self.model_name}")
         except Exception as e:
             logger.error(f"Failed to initialize Gemini client: {e}")
@@ -73,15 +73,16 @@ class GeminiClient:
                 full_prompt = prompt
             
             # Generate content
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=full_prompt,
-                config=types.GenerateContentConfig(
-                    temperature=temperature,
-                    top_p=0.95,
-                    top_k=40,
-                    max_output_tokens=4096,
-                )
+            generation_config = {
+                'temperature': temperature,
+                'top_p': 0.95,
+                'top_k': 40,
+                'max_output_tokens': 4096,
+            }
+            
+            response = self.client.generate_content(
+                full_prompt,
+                generation_config=generation_config
             )
             
             # Calculate metrics
@@ -316,11 +317,12 @@ Apply the specified style, tone, and constraints."""
             raise Exception("Gemini client not initialized. Check API key and installation.")
         
         try:
-            import base64
+            from PIL import Image
+            import io
             start_time = datetime.now()
             
-            # Encode image to base64
-            image_base64 = base64.b64encode(image_data).decode('utf-8')
+            # Convert bytes to PIL Image
+            image = Image.open(io.BytesIO(image_data))
             
             # Create vision prompt
             system_instruction = """You are an expert image analyst. Analyze the provided image and return 
@@ -337,22 +339,19 @@ Apply the specified style, tone, and constraints."""
             
             Return ONLY valid JSON, no additional text or markdown."""
             
+            full_prompt = system_instruction + "\n\n" + prompt
+            
             # Generate content with image
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=[
-                    types.Part.from_bytes(
-                        data=image_data,
-                        mime_type="image/jpeg"  # Gemini supports jpeg, png, webp
-                    ),
-                    system_instruction + "\n\n" + prompt
-                ],
-                config=types.GenerateContentConfig(
-                    temperature=0.3,
-                    top_p=0.95,
-                    top_k=40,
-                    max_output_tokens=2048,
-                )
+            generation_config = {
+                'temperature': 0.3,
+                'top_p': 0.95,
+                'top_k': 40,
+                'max_output_tokens': 2048,
+            }
+            
+            response = self.client.generate_content(
+                [full_prompt, image],
+                generation_config=generation_config
             )
             
             # Calculate metrics

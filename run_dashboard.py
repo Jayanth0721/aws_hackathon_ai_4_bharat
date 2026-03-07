@@ -129,10 +129,8 @@ if __name__ == "__main__":
     print()
     
     ui.run(
-        title='Ashoka - GenAI Governance Platform',
-        dark=False,
-        reload=False,
-        host='0.0.0.0',
-        port=8080,
-        storage_secret=storage_secret
-    )
+    host="0.0.0.0",
+    port=8080,
+    reload=False,
+    workers=1
+)
