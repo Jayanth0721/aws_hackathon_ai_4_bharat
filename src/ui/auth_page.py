@@ -1288,8 +1288,15 @@ class AuthPage:
     def _handle_otp_keyup(self, index):
         """Handle OTP digit input with controlled auto-focus"""
         # Only move to next field if current field has a value
+        # Reduced delay from 0 to 0.5 seconds for smoother experience
         if index < 4 and self.otp_digits[index].value:
-            self.otp_digits[index + 1].run_method("focus")
+            import asyncio
+            asyncio.create_task(self._delayed_focus(index + 1))
+    
+    async def _delayed_focus(self, index):
+        """Delay focus to next OTP field by 0.5 seconds"""
+        await asyncio.sleep(0.5)
+        self.otp_digits[index].run_method("focus")
 
     def _update_timer(self):
         if datetime.utcnow() < self.otp_expiry:

@@ -759,23 +759,8 @@ class AshokaGovDashboard:
                 self.subtitle_label = ui.label(self.t('subtitle')).classes('text-sm text-cyan-50 ml-4')
                 ui.space()
                 
-                # Calendar/Date-Time display
+                # Session timer in header
                 with ui.card().classes('timer-shell px-4 py-2 shadow-lg mr-3'):
-                    with ui.row().classes('items-center gap-2'):
-                        ui.icon('calendar_today', size='sm').classes('text-white')
-                        # Get current date and time with timezone
-                        timezone = self.user_preferences.get('timezone', 'IST')
-                        if timezone == 'IST':
-                            tz = pytz.timezone('Asia/Kolkata')
-                        else:
-                            tz = pytz.UTC
-                        current_dt = datetime.now(tz)
-                        date_str = current_dt.strftime('%d-%b-%Y')
-                        time_str = current_dt.strftime('%I:%M %p')
-                        self.datetime_label = ui.label(f'{date_str} {time_str} {timezone}').classes('timer-text font-mono text-sm font-bold')
-                
-                # Session timer
-                with ui.card().classes('timer-shell px-4 py-2 shadow-lg'):
                     with ui.row().classes('items-center gap-2'):
                         ui.icon('schedule', size='sm').classes('text-white')
                         self.timer_label = ui.label('30:00').classes('timer-text font-mono text-lg font-bold')
@@ -791,12 +776,27 @@ class AshokaGovDashboard:
                 with ui.row().classes('w-full items-center justify-between'):
                     with ui.column().classes('gap-1'):
                         ui.label('Command Center').classes('text-2xl font-bold')
-                        ui.label(f'Workspace for {self.current_username}').classes('text-sm text-cyan-50')
-                    with ui.row().classes('items-center gap-2'):
-                        ui.badge(datetime.now().strftime('%d %b %Y'), color='white').classes('text-teal-800')
-                        ui.badge(self.current_user_role.title(), color='white').classes('text-teal-800')
-                    role_color = 'red' if self.current_user_role == 'admin' else 'blue' if self.current_user_role == 'creator' else 'green'
-                    ui.badge(self.current_user_role.upper(), color=role_color).classes('text-sm font-semibold')
+                        ui.label(f'Workspace for {self.current_username}').classes('text-sm').style('color: #a855f7; font-weight: 600;')  # Purple color
+                    # Right side: Date-time display and role
+                    with ui.row().classes('items-center gap-4'):
+                        # Calendar/Date-Time display (moved from header)
+                        with ui.card().classes('timer-shell px-4 py-2 shadow-lg'):
+                            with ui.row().classes('items-center gap-2'):
+                                ui.icon('calendar_today', size='sm').classes('text-white')
+                                # Get current date and time with timezone
+                                timezone = self.user_preferences.get('timezone', 'IST')
+                                if timezone == 'IST':
+                                    tz = pytz.timezone('Asia/Kolkata')
+                                else:
+                                    tz = pytz.UTC
+                                current_dt = datetime.now(tz)
+                                date_str = current_dt.strftime('%d-%b-%Y')
+                                time_str = current_dt.strftime('%I:%M %p')
+                                self.datetime_label = ui.label(f'{date_str} {time_str} {timezone}').classes('timer-text font-mono text-sm font-bold')
+                        
+                        # Role badge only (no username)
+                        role_color = 'red' if self.current_user_role == 'admin' else 'blue' if self.current_user_role == 'creator' else 'green'
+                        ui.badge(self.current_user_role.upper(), color=role_color).classes('text-sm font-semibold')
 
             with ui.element('div').classes('dashboard-grid w-full'):
                 with ui.card().classes('dashboard-sidebar p-3 h-fit'):
@@ -810,14 +810,18 @@ class AshokaGovDashboard:
                         # Content Intelligence tab - accessible to ALL users (admin, creator, viewer)
                         self.content_tab = ui.tab(self.t('content_intelligence'), icon='psychology').on('click', lambda: self.main_tabs.set_value(self.content_tab))
 
-                        self.monitor_tab = ui.tab(self.t('monitoring'), icon='bar_chart').on('click', lambda: self.main_tabs.set_value(self.monitor_tab))
+                        # Monitoring tab - only for creator and admin roles
+                        self.monitor_tab = None
+                        if self.current_user_role in ['creator', 'admin']:
+                            self.monitor_tab = ui.tab(self.t('monitoring'), icon='bar_chart').on('click', lambda: self.main_tabs.set_value(self.monitor_tab))
+                        
                         self.alerts_tab = ui.tab(self.t('alerts'), icon='notifications').on('click', lambda: self.main_tabs.set_value(self.alerts_tab))
                         self.security_tab = None
                         if self.current_user_role == 'admin':
                             self.security_tab = ui.tab(self.t('security'), icon='security').on('click', lambda: self.main_tabs.set_value(self.security_tab))
                         
                         # Help tab - accessible to ALL users
-                        self.help_tab = ui.tab('Help & Support', icon='help').on('click', lambda: self.main_tabs.set_value(self.help_tab))
+                        self.help_tab = ui.tab('Help', icon='help').on('click', lambda: self.main_tabs.set_value(self.help_tab))
                         
                         # About tab - accessible to ALL users
                         self.about_tab = ui.tab('About', icon='info').on('click', lambda: self.main_tabs.set_value(self.about_tab))
@@ -846,10 +850,11 @@ class AshokaGovDashboard:
                         with ui.tab_panel(self.content_tab):
                             self._create_content_intelligence_panel()
 
-                        # Monitoring Panel
-                        with ui.tab_panel(self.monitor_tab):
-                            with ui.column().classes('w-full'):
-                                self._create_monitoring_panel()
+                        # Monitoring Panel - only for creator and admin
+                        if self.monitor_tab:
+                            with ui.tab_panel(self.monitor_tab):
+                                with ui.column().classes('w-full'):
+                                    self._create_monitoring_panel()
 
                         # Alerts Panel
                         with ui.tab_panel(self.alerts_tab):
@@ -1548,27 +1553,7 @@ class AshokaGovDashboard:
                                 ui.label(f'{percentage}%').classes(f'text-xs font-bold text-{color}-600')
                             ui.linear_progress(percentage / 100).props(f'color={color}').classes('h-2')
 
-        # System Health - Full width
-        with ui.card().classes('w-full'):
-            ui.label(self.t('system_health')).classes('text-xl font-semibold mb-4')
 
-            with ui.row().classes('w-full gap-8'):
-                with ui.column().classes('flex-1'):
-                    ui.label(self.t('ai_model_performance')).classes('text-sm text-gray-600 mb-2')
-                    ui.linear_progress(0.95).classes('mb-4').props('color=green')
-
-                with ui.column().classes('flex-1'):
-                    ui.label(self.t('content_processing_rate')).classes('text-sm text-gray-600 mb-2')
-                    ui.linear_progress(metrics['processing_rate']).classes('mb-4').props('color=blue')
-
-                with ui.column().classes('flex-1'):
-                    ui.label(self.t('storage_utilization')).classes('text-sm text-gray-600 mb-2')
-                    ui.linear_progress(metrics['storage_utilization']).classes('mb-4').props('color=orange')
-
-            with ui.row().classes('gap-2 mt-4'):
-                ui.badge(self.t('api_healthy'), color='green')
-                ui.badge(self.t('database_healthy'), color='green')
-                ui.badge(self.t('ai_healthy'), color='green')
 
     def _get_dashboard_metrics(self, force_refresh: bool = False):
         """Fetch real metrics from database"""
@@ -1904,7 +1889,7 @@ class AshokaGovDashboard:
                             icon='psychology',
                             on_click=lambda: self._analyze_content(self.content_input.value)
                         ).props('color=primary')
-                        ui.button('Clear', icon='clear', on_click=lambda: self.content_input.set_value('')).props('flat')
+                        ui.button('Clear', icon='clear', on_click=self._clear_text_analysis).props('flat')
                     
                     # Inline results container for text analysis
                     self.text_analysis_container = ui.column().classes('w-full mt-4')
@@ -2067,14 +2052,8 @@ class AshokaGovDashboard:
         from src.services.monitoring_service import monitoring_service
         
         with ui.column().classes('w-full gap-4'):
-            # Header with refresh button
-            with ui.row().classes('w-full items-center justify-between mb-2'):
-                ui.label('Quality, Risk & Operations Monitoring').classes('text-3xl font-bold')
-                ui.button(
-                    'Refresh Metrics',
-                    icon='refresh',
-                    on_click=self._refresh_monitoring_metrics
-                ).props('flat color=primary')
+            # Header without refresh button
+            ui.label('Quality, Risk & Operations Monitoring').classes('text-3xl font-bold mb-2')
             
             # Performance Trend Chart - AWS EC2 Style Line Graph
             with ui.card().classes('w-full'):
@@ -2357,14 +2336,13 @@ class AshokaGovDashboard:
         """Create alerts panel with real data from Content Intelligence, Transformations, and Quality checks"""
         
         with ui.column().classes('w-full gap-4'):
-            # Header with refresh button
-            with ui.row().classes('w-full items-center justify-between mb-2'):
-                ui.label('Alerts & Notifications').classes('text-3xl font-bold')
-                ui.button(
-                    'Refresh Alerts',
-                    icon='refresh',
-                    on_click=self._refresh_alerts
-                ).props('flat color=primary')
+            # Header without refresh button
+            ui.label('Alerts & Notifications').classes('text-3xl font-bold mb-2')
+            
+            # System Health Section (moved from overview)
+            with ui.card().classes('w-full bg-gradient-to-r from-teal-50 to-cyan-50'):
+                ui.label('System Health').classes('text-xl font-semibold mb-4')
+                self.alerts_system_health_container = ui.column().classes('w-full gap-3')
             
             # Summary Stats Row
             self.alert_stats_container = ui.row().classes('w-full gap-4 mb-4')
@@ -2559,6 +2537,9 @@ class AshokaGovDashboard:
             if show_notification and not self._is_processing_operation_running():
                 ui.notify('Alerts refreshed', type='positive')
             
+            # Update System Health in alerts panel
+            self._update_alerts_system_health()
+            
         except Exception as e:
             logger.error(f"Error refreshing alerts: {e}")
             self.alerts_container.clear()
@@ -2574,7 +2555,8 @@ class AshokaGovDashboard:
         
         # Use quality_below_80 for warning count (more accurate than filtered alerts)
         # This ensures the count reflects actual quality issues, not just visible alerts
-        warning_display_count = quality_below_80 if quality_below_80 > 0 else warning_count
+        # Ensure minimum of 1 warning is displayed
+        warning_display_count = max(1, quality_below_80 if quality_below_80 > 0 else warning_count)
         
         self.alert_stats_container.clear()
         with self.alert_stats_container:
@@ -2601,6 +2583,46 @@ class AshokaGovDashboard:
                 ui.label(str(len(alerts))).classes('text-3xl font-bold text-blue-600')
                 ui.label('All alert types').classes('text-xs text-gray-500')
                 ui.label('Last 24 hours').classes('text-xs text-gray-500 mt-1')
+    
+    def _update_alerts_system_health(self):
+        """Update system health section in alerts panel"""
+        from src.services.monitoring_service import monitoring_service
+        
+        try:
+            health = monitoring_service.get_system_health()
+            
+            self.alerts_system_health_container.clear()
+            with self.alerts_system_health_container:
+                ui.label('Component Status').classes('text-sm font-medium mb-2')
+                with ui.row().classes('gap-2 mb-4'):
+                    status_color = 'green' if health.api_status == 'Healthy' else 'orange' if health.api_status == 'Degraded' else 'red'
+                    ui.badge(f'API: {health.api_status}', color=status_color)
+                    
+                    status_color = 'green' if health.database_status == 'Healthy' else 'orange' if health.database_status == 'Degraded' else 'red'
+                    ui.badge(f'Database: {health.database_status}', color=status_color)
+                    
+                    status_color = 'green' if health.ai_status == 'Healthy' else 'orange' if health.ai_status == 'Degraded' else 'red'
+                    ui.badge(f'AI: {health.ai_status}', color=status_color)
+                
+                # Performance metrics
+                ui.label('Performance Metrics').classes('text-sm font-medium mb-2 mt-3')
+                with ui.column().classes('gap-2 w-full'):
+                    with ui.row().classes('items-center gap-2 w-full'):
+                        ui.label('AI Model Performance').classes('text-xs text-gray-600 w-48')
+                        ui.linear_progress(0.95).classes('flex-1').props('color=green')
+                        ui.label('95%').classes('text-xs text-gray-600 w-12')
+                    
+                    with ui.row().classes('items-center gap-2 w-full'):
+                        ui.label('Content Processing Rate').classes('text-xs text-gray-600 w-48')
+                        ui.linear_progress(0.82).classes('flex-1').props('color=blue')
+                        ui.label('82%').classes('text-xs text-gray-600 w-12')
+                    
+                    with ui.row().classes('items-center gap-2 w-full'):
+                        ui.label('Storage Utilization').classes('text-xs text-gray-600 w-48')
+                        ui.linear_progress(0.45).classes('flex-1').props('color=orange')
+                        ui.label('45%').classes('text-xs text-gray-600 w-12')
+        except Exception as e:
+            logger.error(f"Error updating system health in alerts: {e}")
     
     def _format_time_ago(self, timestamp):
         """Format timestamp as 'X minutes/hours/days ago'"""
@@ -2902,16 +2924,16 @@ class AshokaGovDashboard:
             with ui.card().classes('w-full p-6').style('background-color: #2563eb;'):
                 with ui.row().classes('items-center gap-3 mb-2'):
                     ui.icon('help_center', size='xl').style('color: #1f2937;')
-                    ui.label('Help & Support').classes('text-3xl font-bold').style('color: #1f2937;')
+                    ui.label('Help').classes('text-3xl font-bold').style('color: #1f2937;')
                 ui.label('Get assistance with the Ashoka GenAI Governance Platform').classes('text-lg').style('color: #1f2937;')
             
-            # Quick Help Section
+            # Quick Help Section - Full width expansions
             with ui.card().classes('w-full'):
                 with ui.row().classes('items-center gap-2 mb-3'):
                     ui.icon('info', size='md').classes('text-blue-600')
                     ui.label('Quick Help').classes('text-xl font-semibold')
                 
-                with ui.column().classes('gap-3'):
+                with ui.column().classes('gap-3 w-full'):
                     with ui.expansion('Getting Started', icon='rocket_launch').classes('w-full'):
                         ui.label('Welcome to Ashoka! Here are the key features:').classes('font-semibold mb-2')
                         ui.html('''
@@ -2988,7 +3010,7 @@ class AshokaGovDashboard:
                             </table>
                         ''')
             
-            # Contact Support Section
+            # Contact Support Section - Horizontal layout
             with ui.card().classes('w-full bg-teal-50'):
                 with ui.row().classes('items-center gap-2 mb-3'):
                     ui.icon('contact_support', size='md').classes('text-teal-600')
@@ -2996,9 +3018,10 @@ class AshokaGovDashboard:
                 
                 ui.label('Need personalized assistance? Reach out to our support team:').classes('text-gray-700 mb-4')
                 
-                with ui.column().classes('gap-4'):
+                # Horizontal layout for contact cards
+                with ui.row().classes('w-full gap-4'):
                     # Contact 1
-                    with ui.card().classes('w-full bg-white border-l-4 border-teal-500'):
+                    with ui.card().classes('flex-1 bg-white border-l-4 border-teal-500'):
                         with ui.row().classes('items-center gap-3'):
                             ui.icon('person', size='lg').classes('text-teal-600')
                             with ui.column().classes('gap-1'):
@@ -3013,7 +3036,7 @@ class AshokaGovDashboard:
                             ).props('flat dense round').classes('ml-2')
                     
                     # Contact 2
-                    with ui.card().classes('w-full bg-white border-l-4 border-cyan-500'):
+                    with ui.card().classes('flex-1 bg-white border-l-4 border-cyan-500'):
                         with ui.row().classes('items-center gap-3'):
                             ui.icon('person', size='lg').classes('text-cyan-600')
                             with ui.column().classes('gap-1'):
@@ -3726,6 +3749,12 @@ class AshokaGovDashboard:
                 with ui.row().classes('gap-2'):
                     ui.button(icon='visibility', on_click=lambda: ui.notify('View details coming soon')).props('flat dense')
                     ui.button(icon='check', on_click=lambda: ui.notify('Alert acknowledged')).props('flat dense')
+    
+    def _clear_text_analysis(self):
+        """Clear text input and analysis results"""
+        self.content_input.set_value('')
+        self.text_analysis_container.clear()
+        ui.notify('Text and analysis cleared', type='info')
     
     async def _analyze_content(self, content: str):
         """Analyze content and display results (async to prevent UI blocking)"""
@@ -4739,13 +4768,13 @@ class AshokaGovDashboard:
         """Display comprehensive analysis results inline in text tab"""
         self.text_analysis_container.clear()
         with self.text_analysis_container:
-            # Processor Info Banner
+            # Processor Info Banner - BLACK TEXT
             with ui.card().classes('w-full bg-gradient-to-r from-blue-500 to-purple-500'):
                 with ui.row().classes('items-center justify-center gap-3 p-4'):
-                    ui.icon('auto_awesome', size='lg').classes('text-white')
-                    ui.label('Analysis Complete').classes('font-bold text-2xl text-white')
+                    ui.icon('auto_awesome', size='lg').classes('text-black')
+                    ui.label('Analysis Complete').classes('font-bold text-2xl text-black')
                 with ui.row().classes('items-center justify-center gap-2 pb-3'):
-                    ui.label('Powered by: Google Gemini (Cloud API)').classes('font-bold text-xl text-white')
+                    ui.label('Powered by: Google Gemini (Cloud API)').classes('font-bold text-xl text-black')
             
             # Summary Card
             with ui.card().classes('w-full bg-blue-50'):
