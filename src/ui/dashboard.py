@@ -800,7 +800,7 @@ class AshokaGovDashboard:
 
             with ui.element('div').classes('dashboard-grid w-full'):
                 with ui.card().classes('dashboard-sidebar p-3'):
-                    ui.label('Navigate').classes('text-xs uppercase tracking-wide text-gray-500 mb-2')
+                    ui.label('Navigate').classes('text-xs uppercase tracking-wide text-gray-500 mb-3')
                     # Main content tabs as side navigation
                     with ui.tabs().props('vertical').classes('w-full side-tabs') as tabs:
                         self.overview_tab = ui.tab(self.t('overview'), icon='dashboard').on('click', lambda: self.main_tabs.set_value(self.overview_tab))
@@ -823,16 +823,17 @@ class AshokaGovDashboard:
                         # Settings tab - accessible to ALL users (hidden tab for full page display)
                         self.settings_tab = ui.tab('Settings', icon='settings').classes('hidden')
 
-                    with ui.column().classes('w-full mt-4 gap-2'):
-                        ui.separator()
-                        ui.label('Quick Actions').classes('text-xs uppercase tracking-wide text-gray-500')
+                    ui.separator().classes('my-3')
+                    ui.label('Quick Actions').classes('text-xs uppercase tracking-wide text-gray-500 mb-2')
+                    with ui.column().classes('w-full gap-1'):
                         ui.button('Refresh Monitoring', icon='refresh', on_click=self._refresh_monitoring_metrics).props('flat').classes('w-full justify-start')
                         ui.button('Refresh Alerts', icon='notifications_active', on_click=self._refresh_alerts).props('flat').classes('w-full justify-start')
                         if self.current_user_role == 'admin':
                             ui.button('Refresh Security', icon='admin_panel_settings', on_click=self._refresh_security_logs).props('flat').classes('w-full justify-start')
-                        
-                        ui.separator().classes('my-2')
-                        ui.label('Account').classes('text-xs uppercase tracking-wide text-gray-500')
+                    
+                    ui.separator().classes('my-3')
+                    ui.label('Account').classes('text-xs uppercase tracking-wide text-gray-500 mb-2')
+                    with ui.column().classes('w-full gap-1'):
                         ui.button(self.t('profile'), icon='account_circle', on_click=lambda: self.main_tabs.set_value(self.profile_tab)).props('flat').classes('w-full justify-start')
                         ui.button(self.t('settings'), icon='settings', on_click=lambda: self.main_tabs.set_value(self.settings_tab)).props('flat').classes('w-full justify-start')
                         ui.button(self.t('logout'), icon='logout', on_click=self._handle_logout).props('flat').classes('w-full justify-start text-red-600')
@@ -2923,11 +2924,11 @@ class AshokaGovDashboard:
         """Create help and support panel accessible to all users"""
         with ui.column().classes('w-full gap-4'):
             # Header
-            with ui.card().classes('w-full bg-gradient-to-r from-teal-500 to-cyan-600 text-white p-6'):
+            with ui.card().classes('w-full p-6').style('background: linear-gradient(to right, #14b8a6, #06b6d4);'):
                 with ui.row().classes('items-center gap-3 mb-2'):
-                    ui.icon('help_center', size='xl').classes('text-white')
-                    ui.label('Help & Support').classes('text-3xl font-bold text-white')
-                ui.label('Get assistance with the Ashoka GenAI Governance Platform').classes('text-lg text-white opacity-90')
+                    ui.icon('help_center', size='xl').style('color: white;')
+                    ui.label('Help & Support').classes('text-3xl font-bold').style('color: white;')
+                ui.label('Get assistance with the Ashoka GenAI Governance Platform').classes('text-lg').style('color: white; opacity: 0.9;')
             
             # Quick Help Section
             with ui.card().classes('w-full'):
@@ -3084,13 +3085,13 @@ class AshokaGovDashboard:
         
         with ui.column().classes('w-full gap-4'):
             # Header
-            with ui.card().classes('w-full bg-gradient-to-r from-teal-500 to-cyan-600 text-white p-6'):
+            with ui.card().classes('w-full p-6').style('background: linear-gradient(to right, #14b8a6, #06b6d4);'):
                 with ui.row().classes('items-center justify-between'):
                     with ui.row().classes('items-center gap-3'):
                         ui.avatar(color='white', text_color='teal-700', icon='person', size='xl').classes('shadow-lg')
                         with ui.column().classes('gap-1'):
-                            ui.label(self.t('user_profile')).classes('text-3xl font-bold text-white')
-                            ui.label(self.current_email).classes('text-lg text-white opacity-90')
+                            ui.label(self.t('user_profile')).classes('text-3xl font-bold').style('color: white;')
+                            ui.label(self.current_email).classes('text-lg').style('color: white; opacity: 0.9;')
                     ui.badge(self.current_user_role.upper(), color=role_color).classes('text-sm font-semibold px-4 py-2')
             
             # User Information Card
@@ -3140,11 +3141,11 @@ class AshokaGovDashboard:
         """Create settings panel as a full page (like help panel)"""
         with ui.column().classes('w-full gap-4'):
             # Header
-            with ui.card().classes('w-full bg-gradient-to-r from-teal-500 to-cyan-600 text-white p-6'):
+            with ui.card().classes('w-full p-6').style('background: linear-gradient(to right, #14b8a6, #06b6d4);'):
                 with ui.row().classes('items-center gap-3 mb-2'):
-                    ui.icon('settings', size='xl').classes('text-white')
-                    ui.label(self.t('settings_preferences')).classes('text-3xl font-bold text-white')
-                ui.label('Customize your experience').classes('text-lg text-white opacity-90')
+                    ui.icon('settings', size='xl').style('color: white;')
+                    ui.label(self.t('settings_preferences')).classes('text-3xl font-bold').style('color: white;')
+                ui.label('Customize your experience').classes('text-lg').style('color: white; opacity: 0.9;')
             
             # Language & Region Card
             with ui.card().classes('w-full'):
