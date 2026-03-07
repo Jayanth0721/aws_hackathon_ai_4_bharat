@@ -432,6 +432,41 @@ ashoka/
 - 🔴 Red: Critical, immediate action
 - 🔵 Blue: Information, neutral
 
+### Recent UI/UX Improvements (March 2026)
+
+**Command Center Enhancements:**
+- Session timer moved to header (top-right) with clock icon
+- Date-time display in Command Center with calendar icon (07-Mar-2026 10:05 PM IST)
+- Role badge display (USER/CREATOR/ADMIN) in Command Center
+- Purple "Workspace for {username}" text (#a855f7) for personalization
+- Cleaner, more intuitive layout
+
+**Help & Support:**
+- Renamed "Help & Support" to "Help" for brevity
+- Quick Help sections (Getting Started, Common Issues, Feature Access) now use full width
+- Contact Support cards changed to horizontal layout for better space utilization
+
+**Content Intelligence:**
+- Analysis section headers changed from white to black for better visibility
+- Clear button now clears both text input AND analysis results
+- Improved user feedback and interaction flow
+
+**Monitoring & Alerts:**
+- Monitoring section hidden for user role (visible only for creator/admin)
+- Removed "Refresh Metrics" button from Monitoring panel (auto-refresh only)
+- Removed "Refresh Alerts" button from Alerts panel (auto-refresh only)
+- System Health moved from Overview to Alerts & Notifications panel
+- Minimum warning count set to 1 for better alert visibility
+
+**Overview Panel:**
+- System Health section removed from Overview (now in Alerts panel)
+- Enhanced platform details with Core Services and How It Works sections
+- Cleaner focus on content metrics and platform capabilities
+
+**Authentication:**
+- OTP input speed reduced by 0.5 seconds for better user experience
+- Smoother authentication flow
+
 ---
 
 ## 📝 Environment Variables

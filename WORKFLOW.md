@@ -25,6 +25,32 @@ Ashoka is designed to streamline content governance workflows from creation to p
 
 Every piece of content flows through this pipeline, ensuring quality, compliance, and optimization at every step.
 
+### Recent UI/UX Improvements (March 2026)
+
+The dashboard has been enhanced with several user experience improvements:
+
+**Navigation & Layout:**
+- Session timer relocated to header (top-right) for better visibility
+- Command Center displays date-time with calendar icon and role badge
+- Personalized workspace indicator with purple text
+- Help section streamlined with full-width quick access panels
+
+**Content Intelligence:**
+- Clear button now resets both input and analysis results
+- Analysis headers improved for better readability (black text)
+- Smoother interaction flow
+
+**Monitoring & Alerts:**
+- Role-based visibility (Monitoring hidden for standard users)
+- Auto-refresh only (manual refresh buttons removed)
+- System Health consolidated in Alerts panel
+- Enhanced alert visibility with minimum warning count
+
+**Overview Panel:**
+- Focused on platform capabilities and content metrics
+- System Health moved to Alerts for better context
+- Enhanced platform details with Core Services guide
+
 ---
 
 ## User Roles & Permissions
@@ -321,11 +347,14 @@ Login → Set Restrictions → Monitor Security → Review User Activity → Man
 
 **Objective**: Track content quality trends and respond to alerts
 
+**Prerequisites**: Creator or Admin role (Monitoring section hidden for User role)
+
 **Steps:**
 
 1. **Access Monitoring Dashboard**
    ```
    Navigate to: Monitoring tab (sidebar)
+   Note: Only visible for Creator and Admin roles
    ```
 
 2. **Review Performance Trends**
@@ -344,25 +373,25 @@ Login → Set Restrictions → Monitor Security → Review User Activity → Man
    - Risk assessments
    ```
 
-4. **Check System Health**
-   ```
-   Verify:
-   - API: Healthy
-   - Database: Healthy
-   - AI: Healthy
-   ```
-
-5. **Navigate to Alerts**
+4. **Navigate to Alerts**
    ```
    Click: Alerts tab (sidebar)
    ```
 
-6. **Review Alert Summary**
+5. **Review Alert Summary**
    ```
    Check counts:
    - Critical: Quality <60% (immediate action)
-   - Warnings: Quality <80% (review recommended)
+   - Warnings: Quality <80% (review recommended) - minimum 1 shown
    - Success: Quality ≥85% (good performance)
+   ```
+
+6. **Check System Health**
+   ```
+   In Alerts panel, verify:
+   - API: Healthy
+   - Database: Healthy
+   - AI: Healthy
    ```
 
 7. **Filter Alerts**
@@ -389,14 +418,21 @@ Login → Set Restrictions → Monitor Security → Review User Activity → Man
    3. Monitor trends
    ```
 
-9. **Refresh Data**
+9. **Auto-Refresh**
    ```
-   Click "Refresh Alerts" or wait for auto-refresh (10 minutes)
+   Wait for automatic refresh (10 minutes)
+   Note: Manual refresh buttons removed for cleaner UI
    ```
 
 **Expected Outcome**: Proactive quality management, early issue detection
 
 **Time Required**: 5-10 minutes daily
+
+**UI Notes:**
+- Monitoring section only visible for Creator/Admin roles
+- System Health moved from Overview to Alerts panel
+- Auto-refresh only (no manual refresh buttons)
+- Minimum 1 warning always displayed for visibility
 
 ---
 

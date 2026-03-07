@@ -2,6 +2,40 @@
 
 Comprehensive guide to all features in the Ashoka GenAI Governance Platform.
 
+## Recent UI/UX Improvements (March 2026)
+
+### Dashboard Enhancements
+
+**Command Center:**
+- Session timer moved to header (top-right) with clock icon for better visibility
+- Date-time display with calendar icon (07-Mar-2026 10:05 PM IST)
+- Role badge display (USER/CREATOR/ADMIN)
+- Purple "Workspace for {username}" text for personalization
+
+**Help Section:**
+- Renamed from "Help & Support" to "Help"
+- Quick Help panels (Getting Started, Common Issues, Feature Access) now full-width
+- Contact Support cards in horizontal layout
+
+**Content Intelligence:**
+- Analysis headers changed to black for better visibility
+- Clear button now clears both input AND analysis results
+- Improved user feedback
+
+**Monitoring & Alerts:**
+- Monitoring section hidden for User role (Creator/Admin only)
+- Manual refresh buttons removed (auto-refresh only)
+- System Health moved from Overview to Alerts panel
+- Minimum 1 warning displayed for better visibility
+
+**Overview Panel:**
+- System Health section removed (now in Alerts)
+- Enhanced platform details with Core Services and How It Works
+- Cleaner focus on content metrics
+
+**Authentication:**
+- OTP input speed reduced by 0.5 seconds for smoother experience
+
 ## Table of Contents
 1. [Content Intelligence & Analysis](#content-intelligence--analysis)
 2. [AI Content Generator](#ai-content-generator)
@@ -162,6 +196,8 @@ View and reload past transformations.
 
 Track system performance and operations.
 
+**Access:** Creator and Admin roles only (hidden for User role)
+
 **Metrics displayed:**
 - **Total Operations**: Count of all operations
 - **Success Rate**: Percentage of successful operations
@@ -176,13 +212,34 @@ Track system performance and operations.
 
 **Refresh:**
 - Auto-refreshes every 30 seconds
-- Manual refresh button available
+- Manual refresh button removed for cleaner UI
+
+**Role-Based Visibility:**
+- ✅ Visible for Creator role
+- ✅ Visible for Admin role
+- ❌ Hidden for User role
 
 ---
 
 ## Alerts & Notifications
 
 Real-time alerts from Content Intelligence analysis and Multi-Platform Content Transformer operations.
+
+### UI Improvements
+
+**Recent Changes:**
+- Manual refresh button removed (auto-refresh only)
+- System Health section moved from Overview to Alerts panel
+- Minimum 1 warning always displayed for better visibility
+- Cleaner, more focused interface
+
+### System Health
+
+**Now located in Alerts panel** (moved from Overview):
+- **AI Model Performance**: 95% operational
+- **Content Processing Rate**: Real-time metrics
+- **Storage Utilization**: Current usage levels
+- **Status Badges**: API, Database, AI health indicators
 
 ### Data Sources
 
@@ -220,7 +277,7 @@ Alerts are generated from:
 
 Dashboard shows:
 - **Critical**: Requires immediate action
-- **Warnings**: Review recommended
+- **Warnings**: Review recommended (minimum 1 displayed)
 - **Success**: Operations completed
 - **Total Alerts**: Last 24 hours
 
@@ -244,7 +301,7 @@ Alerts show relative time:
 ### Auto-Refresh
 
 - Alerts auto-refresh every 10 minutes
-- Manual refresh button available
+- Manual refresh button removed for cleaner UI
 - Shows last 20 most recent alerts
 
 ---

@@ -1,12 +1,162 @@
 # Recent Fixes & Updates - Ashoka Platform
 
-> **Summary of critical fixes applied to resolve deployment and API issues**
+> **Summary of critical fixes and UI/UX improvements applied to the platform**
 
 ---
 
 ## Overview
 
-This document summarizes the recent fixes applied to the Ashoka platform to resolve WebSocket connection failures and Gemini API integration issues encountered during AWS EC2 deployment.
+This document summarizes recent fixes applied to the Ashoka platform, including WebSocket connection failures, Gemini API integration issues, and comprehensive UI/UX improvements for better user experience.
+
+---
+
+## UI/UX Improvements (March 2026)
+
+### Enhancement #1: Command Center Redesign
+
+**Changes:**
+- Removed date/role badges from Command Center title area
+- Added calendar icon with timestamp display (07-Mar-2026 10:05 PM IST)
+- Added role badge (USER/CREATOR/ADMIN) next to timestamp
+- Added purple "Workspace for {username}" text (#a855f7) for personalization
+- Session timer moved to header (top-right) with clock icon
+
+**Benefits:**
+- Cleaner, more intuitive layout
+- Better visual hierarchy
+- Improved personalization
+- Easier session time monitoring
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Enhancement #2: Help Section Improvements
+
+**Changes:**
+- Renamed "Help & Support" to "Help" for brevity
+- Quick Help sections (Getting Started, Common Issues, Feature Access by Role) now use full width
+- Contact Support cards changed from vertical to horizontal layout
+
+**Benefits:**
+- Better space utilization
+- Improved readability
+- More professional appearance
+- Easier navigation
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Enhancement #3: Content Intelligence Improvements
+
+**Changes:**
+- Analysis section headers changed from white to black for better visibility
+- Clear button now clears both text input AND analysis results (previously only cleared input)
+
+**Benefits:**
+- Better text readability
+- Complete reset functionality
+- Improved user feedback
+- Cleaner workflow
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Enhancement #4: Role-Based Monitoring Visibility
+
+**Changes:**
+- Monitoring section now hidden for User role
+- Only visible for Creator and Admin roles
+
+**Benefits:**
+- Cleaner interface for standard users
+- Role-appropriate feature access
+- Better security and access control
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Enhancement #5: Simplified Refresh Controls
+
+**Changes:**
+- Removed "Refresh Metrics" button from Monitoring panel
+- Removed "Refresh Alerts" button from Alerts panel
+- Auto-refresh continues to work (every 10 minutes)
+
+**Benefits:**
+- Cleaner UI without redundant controls
+- Encourages reliance on auto-refresh
+- Reduced visual clutter
+- More modern interface
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Enhancement #6: System Health Relocation
+
+**Changes:**
+- System Health section moved from Overview panel to Alerts & Notifications panel
+- Overview panel now focuses on platform capabilities and content metrics
+
+**Benefits:**
+- Better contextual placement (health monitoring with alerts)
+- Cleaner Overview panel
+- More logical information architecture
+- Improved user flow
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Enhancement #7: Alert Visibility Improvement
+
+**Changes:**
+- Minimum warning count set to 1 in Alerts section using `max(1, ...)`
+- Ensures at least 1 warning is always displayed
+
+**Benefits:**
+- Better alert visibility
+- Prevents empty warning states
+- Improved user awareness
+- Consistent UI presentation
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Enhancement #8: Authentication Speed Optimization
+
+**Changes:**
+- OTP input speed reduced by 0.5 seconds (added async delay)
+
+**Benefits:**
+- Smoother authentication flow
+- Better user experience
+- Reduced perceived latency
+- More polished interaction
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Enhancement #9: Overview Panel Cleanup
+
+**Changes:**
+- Removed System Health section from Overview panel (lines 1557-1579)
+- Enhanced platform details with Core Services and How It Works sections
+- Focused on content metrics and platform capabilities
+
+**Benefits:**
+- Cleaner, more focused Overview
+- Better first impression for new users
+- Improved information hierarchy
+- System Health now in more appropriate location (Alerts panel)
+
+**Status**: ✅ IMPLEMENTED
 
 ---
 
@@ -313,10 +463,20 @@ If you encounter issues after applying these fixes:
 
 ## Version History
 
+- **2026-03-07 (Latest)**: Applied comprehensive UI/UX improvements
+  - Command Center redesign with session timer relocation
+  - Help section improvements
+  - Content Intelligence enhancements
+  - Role-based monitoring visibility
+  - Simplified refresh controls
+  - System Health relocation
+  - Alert visibility improvements
+  - Authentication speed optimization
+  - Overview panel cleanup
 - **2026-03-07**: Applied WebSocket and Gemini API fixes
 - **2026-03-06**: Initial deployment to AWS EC2
 - **2026-03-05**: Local development completed
 
 ---
 
-**All systems operational! 🚀**
+**All systems operational with enhanced user experience! 🚀**
