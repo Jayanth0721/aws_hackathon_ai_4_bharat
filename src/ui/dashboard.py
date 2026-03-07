@@ -803,19 +803,25 @@ class AshokaGovDashboard:
                     ui.label('Navigate').classes('text-xs uppercase tracking-wide text-gray-500 mb-2')
                     # Main content tabs as side navigation
                     with ui.tabs().props('vertical').classes('w-full side-tabs') as tabs:
-                        self.overview_tab = ui.tab(self.t('overview'), icon='dashboard')
+                        self.overview_tab = ui.tab(self.t('overview'), icon='dashboard').on('click', lambda: self.main_tabs.set_value(self.overview_tab))
 
                         # Content Intelligence tab - accessible to ALL users (admin, creator, viewer)
-                        self.content_tab = ui.tab(self.t('content_intelligence'), icon='psychology')
+                        self.content_tab = ui.tab(self.t('content_intelligence'), icon='psychology').on('click', lambda: self.main_tabs.set_value(self.content_tab))
 
-                        self.monitor_tab = ui.tab(self.t('monitoring'), icon='bar_chart')
-                        self.alerts_tab = ui.tab(self.t('alerts'), icon='notifications')
+                        self.monitor_tab = ui.tab(self.t('monitoring'), icon='bar_chart').on('click', lambda: self.main_tabs.set_value(self.monitor_tab))
+                        self.alerts_tab = ui.tab(self.t('alerts'), icon='notifications').on('click', lambda: self.main_tabs.set_value(self.alerts_tab))
                         self.security_tab = None
                         if self.current_user_role == 'admin':
-                            self.security_tab = ui.tab(self.t('security'), icon='security')
+                            self.security_tab = ui.tab(self.t('security'), icon='security').on('click', lambda: self.main_tabs.set_value(self.security_tab))
                         
                         # Help tab - accessible to ALL users
-                        self.help_tab = ui.tab('Help & Support', icon='help')
+                        self.help_tab = ui.tab('Help & Support', icon='help').on('click', lambda: self.main_tabs.set_value(self.help_tab))
+                        
+                        # Profile tab - accessible to ALL users (hidden tab for full page display)
+                        self.profile_tab = ui.tab('Profile', icon='account_circle').classes('hidden')
+                        
+                        # Settings tab - accessible to ALL users (hidden tab for full page display)
+                        self.settings_tab = ui.tab('Settings', icon='settings').classes('hidden')
 
                     with ui.column().classes('w-full mt-4 gap-2'):
                         ui.separator()
@@ -827,8 +833,8 @@ class AshokaGovDashboard:
                         
                         ui.separator().classes('my-2')
                         ui.label('Account').classes('text-xs uppercase tracking-wide text-gray-500')
-                        ui.button(self.t('profile'), icon='account_circle', on_click=self._show_profile_dialog).props('flat').classes('w-full justify-start')
-                        ui.button(self.t('settings'), icon='settings', on_click=self._show_settings_dialog).props('flat').classes('w-full justify-start')
+                        ui.button(self.t('profile'), icon='account_circle', on_click=lambda: self.main_tabs.set_value(self.profile_tab)).props('flat').classes('w-full justify-start')
+                        ui.button(self.t('settings'), icon='settings', on_click=lambda: self.main_tabs.set_value(self.settings_tab)).props('flat').classes('w-full justify-start')
                         ui.button(self.t('logout'), icon='logout', on_click=self._handle_logout).props('flat').classes('w-full justify-start text-red-600')
 
                 # Store tabs reference for navigation
@@ -864,6 +870,14 @@ class AshokaGovDashboard:
                         # Help Panel - accessible to all users
                         with ui.tab_panel(self.help_tab):
                             self._create_help_panel()
+                        
+                        # Profile Panel - accessible to all users
+                        with ui.tab_panel(self.profile_tab):
+                            self._create_profile_panel()
+                        
+                        # Settings Panel - accessible to all users
+                        with ui.tab_panel(self.settings_tab):
+                            self._create_settings_panel()
     
     def _handle_logout(self):
         """Handle user logout - clear session and redirect to login"""
@@ -2909,11 +2923,11 @@ class AshokaGovDashboard:
         """Create help and support panel accessible to all users"""
         with ui.column().classes('w-full gap-4'):
             # Header
-            with ui.card().classes('w-full bg-gradient-to-r from-teal-500 to-cyan-600 text-white'):
+            with ui.card().classes('w-full bg-gradient-to-r from-teal-500 to-cyan-600 text-white p-6'):
                 with ui.row().classes('items-center gap-3 mb-2'):
-                    ui.icon('help_center', size='xl')
-                    ui.label('Help & Support').classes('text-3xl font-bold')
-                ui.label('Get assistance with the Ashoka GenAI Governance Platform').classes('text-lg opacity-90')
+                    ui.icon('help_center', size='xl').classes('text-white')
+                    ui.label('Help & Support').classes('text-3xl font-bold text-white')
+                ui.label('Get assistance with the Ashoka GenAI Governance Platform').classes('text-lg text-white opacity-90')
             
             # Quick Help Section
             with ui.card().classes('w-full'):
@@ -2954,45 +2968,45 @@ class AshokaGovDashboard:
                     
                     with ui.expansion('Feature Access by Role', icon='admin_panel_settings').classes('w-full'):
                         ui.html('''
-                            <table class="w-full text-sm">
-                                <thead>
-                                    <tr class="border-b">
-                                        <th class="text-left py-2">Feature</th>
-                                        <th class="text-center py-2">User</th>
-                                        <th class="text-center py-2">Creator</th>
-                                        <th class="text-center py-2">Admin</th>
+                            <table class="w-full text-sm border-collapse">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="text-left py-3 px-4 font-semibold border-b-2 border-gray-300">Feature</th>
+                                        <th class="text-center py-3 px-4 font-semibold border-b-2 border-gray-300">User</th>
+                                        <th class="text-center py-3 px-4 font-semibold border-b-2 border-gray-300">Creator</th>
+                                        <th class="text-center py-3 px-4 font-semibold border-b-2 border-gray-300">Admin</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr class="border-b">
-                                        <td class="py-2">Content Analysis</td>
-                                        <td class="text-center">✓</td>
-                                        <td class="text-center">✓</td>
-                                        <td class="text-center">✓</td>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-3 px-4 border-b border-gray-200">Content Analysis</td>
+                                        <td class="text-center py-3 px-4 border-b border-gray-200 text-green-600 font-bold">✓</td>
+                                        <td class="text-center py-3 px-4 border-b border-gray-200 text-green-600 font-bold">✓</td>
+                                        <td class="text-center py-3 px-4 border-b border-gray-200 text-green-600 font-bold">✓</td>
                                     </tr>
-                                    <tr class="border-b">
-                                        <td class="py-2">Content Generation</td>
-                                        <td class="text-center">-</td>
-                                        <td class="text-center">✓</td>
-                                        <td class="text-center">✓</td>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-3 px-4 border-b border-gray-200">Content Generation</td>
+                                        <td class="text-center py-3 px-4 border-b border-gray-200 text-gray-400">-</td>
+                                        <td class="text-center py-3 px-4 border-b border-gray-200 text-green-600 font-bold">✓</td>
+                                        <td class="text-center py-3 px-4 border-b border-gray-200 text-green-600 font-bold">✓</td>
                                     </tr>
-                                    <tr class="border-b">
-                                        <td class="py-2">Content Transformation</td>
-                                        <td class="text-center">-</td>
-                                        <td class="text-center">✓</td>
-                                        <td class="text-center">✓</td>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-3 px-4 border-b border-gray-200">Content Transformation</td>
+                                        <td class="text-center py-3 px-4 border-b border-gray-200 text-gray-400">-</td>
+                                        <td class="text-center py-3 px-4 border-b border-gray-200 text-green-600 font-bold">✓</td>
+                                        <td class="text-center py-3 px-4 border-b border-gray-200 text-green-600 font-bold">✓</td>
                                     </tr>
-                                    <tr class="border-b">
-                                        <td class="py-2">Monitoring & Alerts</td>
-                                        <td class="text-center">✓</td>
-                                        <td class="text-center">✓</td>
-                                        <td class="text-center">✓</td>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-3 px-4 border-b border-gray-200">Monitoring & Alerts</td>
+                                        <td class="text-center py-3 px-4 border-b border-gray-200 text-green-600 font-bold">✓</td>
+                                        <td class="text-center py-3 px-4 border-b border-gray-200 text-green-600 font-bold">✓</td>
+                                        <td class="text-center py-3 px-4 border-b border-gray-200 text-green-600 font-bold">✓</td>
                                     </tr>
-                                    <tr>
-                                        <td class="py-2">Security Dashboard</td>
-                                        <td class="text-center">-</td>
-                                        <td class="text-center">-</td>
-                                        <td class="text-center">✓</td>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-3 px-4">Security Dashboard</td>
+                                        <td class="text-center py-3 px-4 text-gray-400">-</td>
+                                        <td class="text-center py-3 px-4 text-gray-400">-</td>
+                                        <td class="text-center py-3 px-4 text-green-600 font-bold">✓</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -3013,7 +3027,7 @@ class AshokaGovDashboard:
                             ui.icon('person', size='lg').classes('text-teal-600')
                             with ui.column().classes('gap-1'):
                                 ui.label('Jayanth').classes('text-lg font-semibold')
-                                ui.label('Technical Support Lead').classes('text-sm text-gray-600')
+                                ui.label('Support').classes('text-sm text-gray-600')
                         with ui.row().classes('items-center gap-2 mt-2'):
                             ui.icon('phone', size='sm').classes('text-gray-600')
                             ui.label('+91 8317465997').classes('text-base')
@@ -3028,7 +3042,7 @@ class AshokaGovDashboard:
                             ui.icon('person', size='lg').classes('text-cyan-600')
                             with ui.column().classes('gap-1'):
                                 ui.label('Loka Ram Kalyan').classes('text-lg font-semibold')
-                                ui.label('Platform Support Specialist').classes('text-sm text-gray-600')
+                                ui.label('Support').classes('text-sm text-gray-600')
                         with ui.row().classes('items-center gap-2 mt-2'):
                             ui.icon('phone', size='sm').classes('text-gray-600')
                             ui.label('+91 93928 79201').classes('text-base')
@@ -3061,7 +3075,151 @@ class AshokaGovDashboard:
                 with ui.column().classes('gap-1 text-sm'):
                     ui.label(f'Platform Version: 1.0.0').classes('text-gray-700')
                     ui.label(f'Your Role: {self.current_user_role.title()}').classes('text-gray-700')
-                    ui.label(f'Logged in as: {self.current_user}').classes('text-gray-700')
+                    ui.label(f'Logged in as: {self.current_username}').classes('text-gray-700')
+    
+    def _create_profile_panel(self):
+        """Create profile panel as a full page (like help panel)"""
+        role_color = 'red' if self.current_user_role == 'admin' else 'blue' if self.current_user_role == 'creator' else 'green'
+        stats = self._get_profile_stats()
+        
+        with ui.column().classes('w-full gap-4'):
+            # Header
+            with ui.card().classes('w-full bg-gradient-to-r from-teal-500 to-cyan-600 text-white p-6'):
+                with ui.row().classes('items-center justify-between'):
+                    with ui.row().classes('items-center gap-3'):
+                        ui.avatar(color='white', text_color='teal-700', icon='person', size='xl').classes('shadow-lg')
+                        with ui.column().classes('gap-1'):
+                            ui.label(self.t('user_profile')).classes('text-3xl font-bold text-white')
+                            ui.label(self.current_email).classes('text-lg text-white opacity-90')
+                    ui.badge(self.current_user_role.upper(), color=role_color).classes('text-sm font-semibold px-4 py-2')
+            
+            # User Information Card
+            with ui.card().classes('w-full'):
+                ui.label('User Information').classes('text-xl font-semibold mb-4')
+                with ui.row().classes('w-full gap-4'):
+                    with ui.column().classes('flex-1 gap-3'):
+                        with ui.column().classes('gap-1'):
+                            ui.label(self.t('username')).classes('text-xs uppercase tracking-wide text-gray-500')
+                            ui.label(self.current_username).classes('text-lg font-semibold')
+                        with ui.column().classes('gap-1'):
+                            ui.label(self.t('email')).classes('text-xs uppercase tracking-wide text-gray-500')
+                            ui.label(self.current_email).classes('text-lg font-semibold')
+                    with ui.column().classes('flex-1 gap-3'):
+                        with ui.column().classes('gap-1'):
+                            ui.label(self.t('role')).classes('text-xs uppercase tracking-wide text-gray-500')
+                            ui.label(self.current_user_role.title()).classes('text-lg font-semibold')
+                        with ui.column().classes('gap-1'):
+                            ui.label(self.t('member_since')).classes('text-xs uppercase tracking-wide text-gray-500')
+                            ui.label('February 2026').classes('text-lg font-semibold')
+            
+            # Session Information Card
+            with ui.card().classes('w-full'):
+                ui.label('Session Information').classes('text-xl font-semibold mb-4')
+                with ui.row().classes('w-full items-center justify-between'):
+                    with ui.row().classes('items-center gap-2'):
+                        ui.icon('schedule', size='md').classes('text-teal-600')
+                        ui.label('Session Started').classes('text-base')
+                    ui.label(self.session_start_time.strftime('%Y-%m-%d %I:%M %p')).classes('text-lg font-medium')
+            
+            # Activity Statistics Card
+            with ui.card().classes('w-full'):
+                ui.label('Activity Statistics').classes('text-xl font-semibold mb-4')
+                with ui.row().classes('w-full gap-4'):
+                    for icon, label, value, color in [
+                        ('description', 'Content Analyzed', stats['analyzed'], 'blue'),
+                        ('transform', 'Transformations', stats['transformed'], 'purple'),
+                        ('pause_circle', 'Paused Tasks', stats['paused_tasks'], 'orange'),
+                        ('warning', 'Risk Alerts', stats['risk_alerts'], 'red'),
+                    ]:
+                        with ui.card().classes('flex-1 text-center p-6 bg-gray-50'):
+                            ui.icon(icon, size='lg').classes(f'text-{color}-600 mb-2')
+                            ui.label(label).classes('text-sm text-gray-600 mb-1')
+                            ui.label(str(value)).classes(f'text-3xl font-bold text-{color}-700')
+    
+    def _create_settings_panel(self):
+        """Create settings panel as a full page (like help panel)"""
+        with ui.column().classes('w-full gap-4'):
+            # Header
+            with ui.card().classes('w-full bg-gradient-to-r from-teal-500 to-cyan-600 text-white p-6'):
+                with ui.row().classes('items-center gap-3 mb-2'):
+                    ui.icon('settings', size='xl').classes('text-white')
+                    ui.label(self.t('settings_preferences')).classes('text-3xl font-bold text-white')
+                ui.label('Customize your experience').classes('text-lg text-white opacity-90')
+            
+            # Language & Region Card
+            with ui.card().classes('w-full'):
+                ui.label('Language & Region').classes('text-xl font-semibold mb-4')
+                with ui.column().classes('w-full gap-4'):
+                    language_select = ui.select(
+                        ['English', 'Hindi', 'Kannada', 'Tamil'],
+                        value=self.current_language,
+                        label=self.t('select_language')
+                    ).classes('w-full')
+                    timezone_select = ui.select(
+                        ['IST', 'UTC'],
+                        value=self.user_preferences.get('timezone', 'IST'),
+                        label='Timezone'
+                    ).classes('w-full')
+            
+            # Notifications Card
+            with ui.card().classes('w-full'):
+                ui.label(self.t('notifications')).classes('text-xl font-semibold mb-4')
+                with ui.column().classes('w-full gap-3'):
+                    notifications_switch = ui.switch(self.t('enable_notifications'), value=self.user_preferences.get('notifications', True))
+                    email_alerts_switch = ui.switch(self.t('email_alerts_critical'), value=self.user_preferences.get('email_alerts', False))
+            
+            # Content Management Card
+            with ui.card().classes('w-full'):
+                ui.label(self.t('content_management')).classes('text-xl font-semibold mb-4')
+                with ui.column().classes('w-full gap-3'):
+                    auto_save_switch = ui.switch(self.t('auto_save_drafts'), value=self.user_preferences.get('auto_save', True))
+            
+            # Session Settings Card
+            with ui.card().classes('w-full'):
+                ui.label(self.t('session')).classes('text-xl font-semibold mb-4')
+                with ui.column().classes('w-full gap-3'):
+                    session_timeout_input = ui.number(
+                        label=self.t('session_timeout_minutes'),
+                        value=self.user_preferences.get('session_timeout', 30),
+                        min=5,
+                        max=120,
+                        step=5
+                    ).classes('w-full')
+            
+            # Paused Tasks Card (if any)
+            if len(self.paused_tasks) > 0:
+                with ui.card().classes('w-full bg-orange-50'):
+                    ui.label(self.t('paused_tasks')).classes('text-xl font-semibold mb-4')
+                    ui.label(self.t('you_have_paused_tasks').format(count=len(self.paused_tasks))).classes('text-base text-gray-700 mb-3')
+                    ui.button(self.t('view_paused_tasks'), icon='visibility', on_click=self._show_paused_tasks_dialog).props('color=orange')
+            
+            # Save Button
+            with ui.row().classes('w-full justify-end gap-2'):
+                def save_settings():
+                    # Update preferences
+                    self.user_preferences['language'] = language_select.value
+                    self.user_preferences['timezone'] = timezone_select.value
+                    self.user_preferences['notifications'] = notifications_switch.value
+                    self.user_preferences['email_alerts'] = email_alerts_switch.value
+                    self.user_preferences['auto_save'] = auto_save_switch.value
+                    self.user_preferences['session_timeout'] = int(session_timeout_input.value)
+                    
+                    # Save to storage
+                    app.storage.general['language'] = language_select.value
+                    app.storage.general['session_timeout'] = int(session_timeout_input.value)
+                    
+                    # Update current language
+                    self.current_language = language_select.value
+                    
+                    # Update session duration if changed
+                    new_timeout = int(session_timeout_input.value) * 60
+                    if new_timeout != self.session_duration:
+                        self.session_duration = new_timeout
+                        app.storage.general['session_timeout'] = int(session_timeout_input.value)
+                    
+                    ui.notify(self.t('settings_saved'), type='positive')
+                
+                ui.button(self.t('save_settings'), icon='save', on_click=save_settings).props('color=primary')
     
     def _refresh_security_logs(self, show_notification: bool = True):
         """Refresh security logs with real data from DuckDB"""
