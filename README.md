@@ -202,41 +202,123 @@ Open http://localhost:8080 in your browser.
 
 ---
 
-## 🛠️ Technology Stack
+## 🛠️ Complete Technology Stack
 
-### Frontend
-- **NiceGUI**: Python-based reactive web framework (v2.5.0+ required for WebSocket support)
-- **Tailwind CSS**: Modern utility-first styling
-- **Custom Theme**: Teal/cyan gradient with dark mode support
+### Frontend Layer
+- **NiceGUI** v2.5.0+ - Python-based reactive web framework
+- **Tailwind CSS** - Modern utility-first styling
+- **JavaScript** - Client-side interactions and WebSocket support
+- **Custom Theme** - Teal/cyan gradient with dark mode
+
+### Backend Layer
+- **Python** 3.8+ - Core application language
+- **Async/Await** - Non-blocking operations
+- **RESTful API** - Standard API patterns
 
 ### AI & Machine Learning
-- **Google Gemini API** (gemini-2.5-flash):
+- **Google Gemini API** (gemini-2.5-flash)
   - Content analysis and sentiment detection
   - Text generation and transformation
   - Quality scoring and keyword extraction
   - Audio/video transcription and analysis
-  - **SDK**: `google-genai` v1.66.0+ (NEW SDK, replaces deprecated `google-generativeai`)
-- **Son of Ashoka API** (Cloudflare Workers):
-  - AI image generation
-  - Cost-optimized processing
+  - SDK: `google-genai` v1.66.0+
+- **Son of Ashoka API** (Cloudflare Workers)
+  - AI image generation (FREE)
   - Global edge distribution
+  - Automatic load balancing
 
 ### Document Processing
-- **pdfplumber**: PDF text extraction (FREE)
-- **python-docx**: DOCX document processing (FREE)
-- **moviepy**: Video processing (FREE)
-- **FFmpeg**: Audio/video codec support (FREE)
+- **pdfplumber** - PDF text extraction
+- **python-docx** - DOCX document processing
+- **moviepy** - Video processing
+- **FFmpeg** - Audio/video codec support
+- **Pillow** - Image processing
 
 ### Database & Storage
-- **DuckDB**: Local file-based database (default)
-- **DynamoDB**: AWS cloud database (optional)
-- **File Storage**: Local uploads directory
+- **DuckDB** - Local file-based database (default)
+- **DynamoDB** - AWS cloud database (optional)
+- **File Storage** - Local uploads directory
+
+### Cloud & Infrastructure
+- **AWS EC2** - Application hosting and deployment
+- **AWS DynamoDB** - Optional cloud database for production
+- **Cloudflare Workers** - Image generation API (Son of Ashoka)
+- **No-IP / Dynamic DNS** - Domain management for EC2
 
 ### Authentication & Security
 - **OTP-based Authentication**: Secure login with time-limited codes
 - **Session Management**: Token-based with configurable timeout
 - **Password Hashing**: Secure credential storage
 - **Role-Based Access**: Granular permission system
+
+---
+
+## ☁️ AWS Services Used
+
+This project leverages the following AWS services:
+
+### Core Services
+
+1. **Amazon EC2 (Elastic Compute Cloud)**
+   - **Purpose**: Application hosting and deployment
+   - **Instance Type**: t2.micro or t2.small (Free Tier eligible)
+   - **Configuration**: Ubuntu Server with Python 3.8+
+   - **Access**: Public IP with port 8080 exposed
+   - **Cost**: Free Tier: 750 hours/month, After: ~$8-15/month
+
+2. **Amazon DynamoDB** (Optional)
+   - **Purpose**: Cloud-based NoSQL database for production
+   - **Tables**: Users, content analysis, transform history, security events
+   - **Mode**: On-demand pricing
+   - **Alternative**: DuckDB (local, file-based) for development
+   - **Cost**: Free Tier: 25 GB storage, After: ~$5-20/month
+
+### Supporting Infrastructure
+
+3. **Cloudflare Workers** (Not AWS, but integrated)
+   - **Purpose**: AI image generation (Son of Ashoka API)
+   - **Benefit**: FREE image generation (no AWS costs)
+   - **Performance**: Global edge network distribution
+   - **Cost**: $0/month
+
+### Deployment Tools
+
+4. **AWS Security Groups**
+   - **Purpose**: Firewall rules for EC2 instance
+   - **Configuration**: Port 8080 (HTTP), Port 22 (SSH)
+   - **Cost**: Free
+
+5. **AWS Elastic IP** (Optional)
+   - **Purpose**: Static IP address for EC2 instance
+   - **Benefit**: Prevents IP changes on instance restart
+   - **Cost**: Free while attached to running instance
+
+### Third-Party Integrations
+
+6. **No-IP / Dynamic DNS**
+   - **Purpose**: Domain name mapping (e.g., ashoka-ai.hopto.org)
+   - **Benefit**: Human-readable URL instead of IP address
+   - **Cost**: Free tier available
+
+### Cost Summary
+
+**Minimum Setup (Free Tier):**
+- EC2 t2.micro: Free (750 hours/month)
+- DuckDB (local): Free
+- Cloudflare Workers: Free
+- **Total: $0/month** (within Free Tier limits)
+
+**Production Setup:**
+- EC2 t2.small: ~$15/month
+- DynamoDB: ~$10/month
+- Elastic IP: Free (when attached)
+- **Total: ~$25/month**
+
+**With AI API Costs:**
+- Google Gemini API: ~$5-15/month (based on usage)
+- **Grand Total: ~$30-40/month**
+
+For detailed cost breakdown, see [COST_OPTIMIZATION.md](COST_OPTIMIZATION.md).
 
 ---
 
