@@ -759,18 +759,26 @@ class AshokaGovDashboard:
                 self.subtitle_label = ui.label(self.t('subtitle')).classes('text-sm text-cyan-50 ml-4')
                 ui.space()
                 
+                # Calendar/Date-Time display
+                with ui.card().classes('timer-shell px-4 py-2 shadow-lg mr-3'):
+                    with ui.row().classes('items-center gap-2'):
+                        ui.icon('calendar_today', size='sm').classes('text-white')
+                        # Get current date and time with timezone
+                        timezone = self.user_preferences.get('timezone', 'IST')
+                        if timezone == 'IST':
+                            tz = pytz.timezone('Asia/Kolkata')
+                        else:
+                            tz = pytz.UTC
+                        current_dt = datetime.now(tz)
+                        date_str = current_dt.strftime('%d-%b-%Y')
+                        time_str = current_dt.strftime('%I:%M %p')
+                        self.datetime_label = ui.label(f'{date_str} {time_str} {timezone}').classes('timer-text font-mono text-sm font-bold')
+                
                 # Session timer
                 with ui.card().classes('timer-shell px-4 py-2 shadow-lg'):
                     with ui.row().classes('items-center gap-2'):
                         ui.icon('schedule', size='sm').classes('text-white')
                         self.timer_label = ui.label('30:00').classes('timer-text font-mono text-lg font-bold')
-                
-                with ui.button(icon='account_circle').props('flat round').classes('text-white'):
-                    with ui.menu():
-                        ui.menu_item(self.t('profile'), on_click=self._show_profile_dialog)
-                        ui.menu_item(self.t('settings'), on_click=self._show_settings_dialog)
-                        ui.separator()
-                        ui.menu_item(self.t('logout'), on_click=self._handle_logout)
         
         # Start session timer
         self._start_session_timer()
@@ -816,6 +824,12 @@ class AshokaGovDashboard:
                         ui.button('Refresh Alerts', icon='notifications_active', on_click=self._refresh_alerts).props('flat').classes('w-full justify-start')
                         if self.current_user_role == 'admin':
                             ui.button('Refresh Security', icon='admin_panel_settings', on_click=self._refresh_security_logs).props('flat').classes('w-full justify-start')
+                        
+                        ui.separator().classes('my-2')
+                        ui.label('Account').classes('text-xs uppercase tracking-wide text-gray-500')
+                        ui.button(self.t('profile'), icon='account_circle', on_click=self._show_profile_dialog).props('flat').classes('w-full justify-start')
+                        ui.button(self.t('settings'), icon='settings', on_click=self._show_settings_dialog).props('flat').classes('w-full justify-start')
+                        ui.button(self.t('logout'), icon='logout', on_click=self._handle_logout).props('flat').classes('w-full justify-start text-red-600')
 
                 # Store tabs reference for navigation
                 self.main_tabs = tabs
@@ -865,6 +879,17 @@ class AshokaGovDashboard:
     def _start_session_timer(self):
         """Start the session countdown timer"""
         def update_timer():
+            # Update date-time display
+            timezone = self.user_preferences.get('timezone', 'IST')
+            if timezone == 'IST':
+                tz = pytz.timezone('Asia/Kolkata')
+            else:
+                tz = pytz.UTC
+            current_dt = datetime.now(tz)
+            date_str = current_dt.strftime('%d-%b-%Y')
+            time_str = current_dt.strftime('%I:%M %p')
+            self.datetime_label.set_text(f'{date_str} {time_str} {timezone}')
+            
             # Use timezone-naive datetime for consistency
             # Convert session_start_time to naive if it's aware
             start_time = self.session_start_time
