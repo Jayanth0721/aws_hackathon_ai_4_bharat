@@ -570,7 +570,7 @@ class AshokaGovDashboard:
                     min-height: 42px;
                     min-width: 100% !important;
                     border-radius: 10px;
-                    margin-bottom: 4px;
+                    margin-bottom: 18px;
                     padding: 8px 12px !important;
                 }
 
@@ -799,9 +799,11 @@ class AshokaGovDashboard:
                     ui.badge(self.current_user_role.upper(), color=role_color).classes('text-sm font-semibold')
 
             with ui.element('div').classes('dashboard-grid w-full'):
-                with ui.card().classes('dashboard-sidebar p-3'):
-                    ui.label('Navigate').classes('text-xs uppercase tracking-wide text-gray-500 mb-3')
-                    # Main content tabs as side navigation
+                with ui.card().classes('dashboard-sidebar p-3 h-fit'):
+                    # Navigation Panel heading
+                    ui.label('Navigation Panel').classes('text-2xl font-bold mb-3').style('color: #000000')
+                    
+                    # Main content tabs as side navigation - all in one continuous list
                     with ui.tabs().props('vertical').classes('w-full side-tabs') as tabs:
                         self.overview_tab = ui.tab(self.t('overview'), icon='dashboard').on('click', lambda: self.main_tabs.set_value(self.overview_tab))
 
@@ -817,26 +819,16 @@ class AshokaGovDashboard:
                         # Help tab - accessible to ALL users
                         self.help_tab = ui.tab('Help & Support', icon='help').on('click', lambda: self.main_tabs.set_value(self.help_tab))
                         
-                        # Profile tab - accessible to ALL users (hidden tab for full page display)
-                        self.profile_tab = ui.tab('Profile', icon='account_circle').classes('hidden')
+                        # About tab - accessible to ALL users
+                        self.about_tab = ui.tab('About', icon='info').on('click', lambda: self.main_tabs.set_value(self.about_tab))
                         
-                        # Settings tab - accessible to ALL users (hidden tab for full page display)
-                        self.settings_tab = ui.tab('Settings', icon='settings').classes('hidden')
-
-                    ui.separator().classes('my-3')
-                    ui.label('Quick Actions').classes('text-xs uppercase tracking-wide text-gray-500 mb-2')
-                    with ui.column().classes('w-full gap-1'):
-                        ui.button('Refresh Monitoring', icon='refresh', on_click=self._refresh_monitoring_metrics).props('flat').classes('w-full justify-start')
-                        ui.button('Refresh Alerts', icon='notifications_active', on_click=self._refresh_alerts).props('flat').classes('w-full justify-start')
-                        if self.current_user_role == 'admin':
-                            ui.button('Refresh Security', icon='admin_panel_settings', on_click=self._refresh_security_logs).props('flat').classes('w-full justify-start')
-                    
-                    ui.separator().classes('my-3')
-                    ui.label('Account').classes('text-xs uppercase tracking-wide text-gray-500 mb-2')
-                    with ui.column().classes('w-full gap-1'):
-                        ui.button(self.t('profile'), icon='account_circle', on_click=lambda: self.main_tabs.set_value(self.profile_tab)).props('flat').classes('w-full justify-start')
-                        ui.button(self.t('settings'), icon='settings', on_click=lambda: self.main_tabs.set_value(self.settings_tab)).props('flat').classes('w-full justify-start')
-                        ui.button(self.t('logout'), icon='logout', on_click=self._handle_logout).props('flat').classes('w-full justify-start text-red-600')
+                        # Refresh button - refreshes monitoring and alerts, then goes to home
+                        ui.tab('Refresh', icon='refresh').on('click', self._refresh_and_go_home)
+                        
+                        # Account options as tabs
+                        self.profile_tab = ui.tab(self.t('profile'), icon='account_circle').on('click', lambda: self.main_tabs.set_value(self.profile_tab))
+                        self.settings_tab = ui.tab(self.t('settings'), icon='settings').on('click', lambda: self.main_tabs.set_value(self.settings_tab))
+                        ui.tab(self.t('logout'), icon='logout').on('click', self._handle_logout).classes('text-red-600')
 
                 # Store tabs reference for navigation
                 self.main_tabs = tabs
@@ -872,6 +864,10 @@ class AshokaGovDashboard:
                         with ui.tab_panel(self.help_tab):
                             self._create_help_panel()
                         
+                        # About Panel - accessible to all users
+                        with ui.tab_panel(self.about_tab):
+                            self._create_about_panel()
+                        
                         # Profile Panel - accessible to all users
                         with ui.tab_panel(self.profile_tab):
                             self._create_profile_panel()
@@ -890,6 +886,18 @@ class AshokaGovDashboard:
         
         # Redirect to login page
         ui.navigate.to('/')
+    
+    def _refresh_and_go_home(self):
+        """Refresh monitoring and alerts data, then navigate to home page"""
+        # Refresh both monitoring and alerts
+        self._refresh_monitoring_metrics(show_notification=False)
+        self._refresh_alerts(show_notification=False)
+        
+        # Navigate to overview/home page
+        self.main_tabs.set_value(self.overview_tab)
+        
+        # Show single notification
+        ui.notify('Dashboard refreshed', type='positive')
     
     def _start_session_timer(self):
         """Start the session countdown timer"""
@@ -1881,7 +1889,6 @@ class AshokaGovDashboard:
                 image_tab = ui.tab('IMAGE', icon='photo')
                 video_tab = ui.tab('VIDEO', icon='movie')
                 document_tab = ui.tab('DOCUMENT', icon='description')
-                youtube_tab = ui.tab('YOUTUBE', icon='smart_display')
             
             with ui.tab_panels(input_tabs, value=text_tab).classes('w-full'):
                 # Text input panel
@@ -1949,38 +1956,6 @@ class AshokaGovDashboard:
                     ).props('accept=".pdf,.docx,.txt,.md"').classes('w-full')
                     
                     ui.label('Supported formats: PDF, DOCX, TXT, MD').classes('text-xs text-gray-500 mt-2')
-                
-                # YouTube analysis panel
-                with ui.tab_panel(youtube_tab):
-                    ui.label('Analyze YouTube videos directly from URL').classes('text-sm text-gray-600 mb-3')
-                    
-                    # YouTube URL input
-                    self.youtube_url_input = ui.input(
-                        label='YouTube URL',
-                        placeholder='https://www.youtube.com/watch?v=...'
-                    ).classes('w-full mb-3')
-                    
-                    # Metadata preview container
-                    self.youtube_metadata_container = ui.column().classes('w-full mb-4')
-                    
-                    # Analyze button
-                    with ui.row().classes('gap-2'):
-                        ui.button(
-                            'Analyze Video',
-                            icon='play_arrow',
-                            on_click=lambda: self._handle_youtube_analysis(
-                                self.youtube_url_input.value,
-                                'Quick Summary'  # Always use Quick Summary
-                            )
-                        ).props('color=primary')
-                        ui.button(
-                            'Clear',
-                            icon='clear',
-                            on_click=lambda: self._clear_youtube_input()
-                        ).props('flat')
-                    
-                    ui.label('Supported: Standard YouTube URLs, shortened URLs (youtu.be), URLs with timestamps').classes('text-xs text-gray-500 mt-2')
-                    ui.label('Note: Videos longer than 2 hours are not supported').classes('text-xs text-gray-500')
         
         # AI Content Generator Section
         with ui.card().classes('w-full mt-4'):
@@ -2923,12 +2898,12 @@ class AshokaGovDashboard:
     def _create_help_panel(self):
         """Create help and support panel accessible to all users"""
         with ui.column().classes('w-full gap-4'):
-            # Header
-            with ui.card().classes('w-full p-6').style('background: linear-gradient(to right, #14b8a6, #06b6d4);'):
+            # Header with solid blue background
+            with ui.card().classes('w-full p-6').style('background-color: #2563eb;'):
                 with ui.row().classes('items-center gap-3 mb-2'):
-                    ui.icon('help_center', size='xl').style('color: white;')
-                    ui.label('Help & Support').classes('text-3xl font-bold').style('color: white;')
-                ui.label('Get assistance with the Ashoka GenAI Governance Platform').classes('text-lg').style('color: white; opacity: 0.9;')
+                    ui.icon('help_center', size='xl').style('color: #1f2937;')
+                    ui.label('Help & Support').classes('text-3xl font-bold').style('color: #1f2937;')
+                ui.label('Get assistance with the Ashoka GenAI Governance Platform').classes('text-lg').style('color: #1f2937;')
             
             # Quick Help Section
             with ui.card().classes('w-full'):
@@ -2941,7 +2916,7 @@ class AshokaGovDashboard:
                         ui.label('Welcome to Ashoka! Here are the key features:').classes('font-semibold mb-2')
                         ui.html('''
                             <ul class="list-disc pl-5 space-y-1">
-                                <li><strong>Content Intelligence:</strong> Analyze text, images, videos, documents, and YouTube content</li>
+                                <li><strong>Content Intelligence:</strong> Analyze text, images, videos, and documents</li>
                                 <li><strong>AI Content Generator:</strong> Generate text and images using Google Gemini AI</li>
                                 <li><strong>Multi-Platform Transformer:</strong> Transform content for LinkedIn, Twitter, Instagram, Facebook, and more</li>
                                 <li><strong>Monitoring:</strong> Track quality metrics, performance trends, and system health</li>
@@ -3052,7 +3027,7 @@ class AshokaGovDashboard:
                                 on_click=lambda: self._copy_to_clipboard('+91 93928 79201')
                             ).props('flat dense round').classes('ml-2')
                 
-                ui.label('📧 Email: support@ashoka-platform.ai').classes('text-sm text-gray-600 mt-3')
+                ui.label('📧 Email: support@ashoka-platform.ai, guymovie89@gmail.com, alrk6125@gmail.com').classes('text-sm text-gray-600 mt-3')
                 ui.label('⏰ Support Hours: Monday - Friday, 9:00 AM - 6:00 PM IST').classes('text-sm text-gray-600')
             
             # Documentation Section
@@ -3078,6 +3053,157 @@ class AshokaGovDashboard:
                     ui.label(f'Your Role: {self.current_user_role.title()}').classes('text-gray-700')
                     ui.label(f'Logged in as: {self.current_username}').classes('text-gray-700')
     
+    def _create_about_panel(self):
+        """Create about panel with platform information"""
+        with ui.column().classes('w-full gap-4'):
+            # Header with solid blue background
+            with ui.card().classes('w-full p-6').style('background-color: #2563eb;'):
+                with ui.row().classes('items-center gap-3 mb-2'):
+                    ui.icon('info', size='xl').style('color: #1f2937;')
+                    ui.label('About Ashoka').classes('text-3xl font-bold').style('color: #1f2937;')
+                ui.label('GenAI Governance & Observability Platform').classes('text-lg').style('color: #1f2937;')
+            
+            # Introduction Section
+            with ui.card().classes('w-full'):
+                ui.label('Ashoka is a comprehensive GenAI Governance and Observability Platform designed to empower everyone with responsible AI content management. By using this platform, you can track and analyze your content effortlessly, making it helpful for students, parents, working professionals, and content creators alike.').classes('text-base text-gray-700 leading-relaxed')
+            
+            # Built For Everyone Section
+            with ui.card().classes('w-full bg-gradient-to-br from-blue-50 to-cyan-50'):
+                with ui.row().classes('items-center gap-2 mb-3'):
+                    ui.icon('groups', size='md').classes('text-blue-600')
+                    ui.label('Built For Everyone').classes('text-xl font-semibold')
+                
+                ui.label('Ashoka is designed to help diverse users accomplish their work in one consistent, all-in-one place:').classes('text-gray-700 mb-3')
+                
+                with ui.column().classes('gap-3'):
+                    # Students
+                    with ui.card().classes('w-full bg-white border-l-4 border-green-500'):
+                        with ui.row().classes('items-start gap-3'):
+                            ui.icon('school', size='lg').classes('text-green-600 mt-1')
+                            with ui.column().classes('gap-1 flex-1'):
+                                ui.label('Students').classes('text-lg font-semibold text-green-700')
+                                ui.label('Analyze study materials, generate notes, and create presentations with AI assistance').classes('text-sm text-gray-600')
+                    
+                    # Parents
+                    with ui.card().classes('w-full bg-white border-l-4 border-purple-500'):
+                        with ui.row().classes('items-start gap-3'):
+                            ui.icon('family_restroom', size='lg').classes('text-purple-600 mt-1')
+                            with ui.column().classes('gap-1 flex-1'):
+                                ui.label('Parents').classes('text-lg font-semibold text-purple-700')
+                                ui.label('Monitor and understand content quality for educational purposes').classes('text-sm text-gray-600')
+                    
+                    # Working Professionals
+                    with ui.card().classes('w-full bg-white border-l-4 border-blue-500'):
+                        with ui.row().classes('items-start gap-3'):
+                            ui.icon('business_center', size='lg').classes('text-blue-600 mt-1')
+                            with ui.column().classes('gap-1 flex-1'):
+                                ui.label('Working Professionals').classes('text-lg font-semibold text-blue-700')
+                                ui.label('Streamline reports, emails, and business communications with intelligent analysis').classes('text-sm text-gray-600')
+                    
+                    # Content Creators
+                    with ui.card().classes('w-full bg-white border-l-4 border-orange-500'):
+                        with ui.row().classes('items-start gap-3'):
+                            ui.icon('create', size='lg').classes('text-orange-600 mt-1')
+                            with ui.column().classes('gap-1 flex-1'):
+                                ui.label('Content Creators').classes('text-lg font-semibold text-orange-700')
+                                ui.label('Easily generate content with customizable tones (professional, casual, storytelling) and transform it for multiple platforms').classes('text-sm text-gray-600')
+            
+            # What We Do Section
+            with ui.card().classes('w-full'):
+                with ui.row().classes('items-center gap-2 mb-3'):
+                    ui.icon('auto_awesome', size='md').classes('text-teal-600')
+                    ui.label('What We Do').classes('text-xl font-semibold')
+                
+                ui.label('Ashoka combines advanced AI capabilities with robust governance frameworks to deliver:').classes('text-gray-700 mb-3')
+                
+                ui.html('''
+                    <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                        <li><strong>Intelligent Content Analysis:</strong> Leverage Google Gemini AI to analyze text, images, videos, and documents for sentiment, quality, and risk assessment</li>
+                        <li><strong>AI Content Generation:</strong> Generate text-based content with tone customization (professional, casual, storytelling) to match your needs</li>
+                        <li><strong>Multi-Platform Transformation:</strong> Seamlessly adapt your content for LinkedIn, Twitter, Instagram, Facebook, and other social platforms</li>
+                        <li><strong>Real-Time Monitoring:</strong> Track quality metrics, performance trends, and system health with comprehensive dashboards</li>
+                        <li><strong>Proactive Alerts:</strong> Stay informed with intelligent notifications for quality issues, risks, and policy violations</li>
+                        <li><strong>All-in-One Workspace:</strong> Complete your work in a consistent, unified environment without switching between multiple tools</li>
+                    </ul>
+                ''')
+            
+            # Technology Stack Section
+            with ui.card().classes('w-full bg-gray-50'):
+                with ui.row().classes('items-center gap-2 mb-3'):
+                    ui.icon('code', size='md').classes('text-indigo-600')
+                    ui.label('Our Technology Stack').classes('text-xl font-semibold')
+                
+                ui.label('Built on modern, scalable infrastructure:').classes('text-gray-700 mb-3')
+                
+                with ui.column().classes('gap-2'):
+                    with ui.row().classes('items-center gap-2'):
+                        ui.icon('psychology', size='sm').classes('text-purple-600')
+                        ui.label('AI Engine: Google Gemini 2.5 Flash for advanced content understanding').classes('text-sm text-gray-700')
+                    
+                    with ui.row().classes('items-center gap-2'):
+                        ui.icon('cloud', size='sm').classes('text-blue-600')
+                        ui.label('Cloud Infrastructure: AWS EC2 with S3, DynamoDB, and DuckDB for reliable data management').classes('text-sm text-gray-700')
+                    
+                    with ui.row().classes('items-center gap-2'):
+                        ui.icon('web', size='sm').classes('text-green-600')
+                        ui.label('User Interface: NiceGUI framework for responsive, real-time interactions').classes('text-sm text-gray-700')
+                    
+                    with ui.row().classes('items-center gap-2'):
+                        ui.icon('security', size='sm').classes('text-red-600')
+                        ui.label('Security: Industry-standard authentication and role-based access control').classes('text-sm text-gray-700')
+            
+            # Platform Highlights Section
+            with ui.card().classes('w-full bg-gradient-to-br from-teal-50 to-blue-50'):
+                with ui.row().classes('items-center gap-2 mb-3'):
+                    ui.icon('star', size='md').classes('text-yellow-600')
+                    ui.label('Platform Highlights').classes('text-xl font-semibold')
+                
+                with ui.column().classes('gap-2'):
+                    for highlight in [
+                        'Multi-format content analysis (text, image, video, documents)',
+                        'AI-powered content generation with tone selection',
+                        'Multi-platform content transformation',
+                        'Real-time quality and risk monitoring',
+                        'Role-based access control (Admin, Creator, User)',
+                        'Multi-language support (English, Hindi, Kannada, Tamil)',
+                        'Comprehensive audit trails and reporting',
+                        'Consistent, all-in-one workspace for all your content needs'
+                    ]:
+                        with ui.row().classes('items-center gap-2'):
+                            ui.icon('check_circle', size='sm').classes('text-green-600')
+                            ui.label(highlight).classes('text-sm text-gray-700')
+            
+            # Contact Section
+            with ui.card().classes('w-full bg-teal-50'):
+                with ui.row().classes('items-center gap-2 mb-3'):
+                    ui.icon('contact_support', size='md').classes('text-teal-600')
+                    ui.label('Get Started').classes('text-xl font-semibold')
+                
+                ui.label('Experience the power of responsible AI content governance. Whether you\'re analyzing your first piece of content or managing enterprise-scale operations, Ashoka provides the tools you need to succeed.').classes('text-gray-700 mb-4')
+                
+                with ui.column().classes('gap-2'):
+                    with ui.row().classes('items-center gap-2'):
+                        ui.icon('support_agent', size='sm').classes('text-teal-600')
+                        ui.label('Support: +91 8317465997 (Jayanth), +91 93928 79201 (Loka Ram Kalyan)').classes('text-sm text-gray-700')
+                    
+                    with ui.row().classes('items-center gap-2'):
+                        ui.icon('email', size='sm').classes('text-teal-600')
+                        ui.label('Email: support@ashoka-platform.ai, guymovie89@gmail.com, alrk6125@gmail.com').classes('text-sm text-gray-700')
+                    
+                    with ui.row().classes('items-center gap-2'):
+                        ui.icon('schedule', size='sm').classes('text-teal-600')
+                        ui.label('Hours: Monday - Friday, 9:00 AM - 6:00 PM IST').classes('text-sm text-gray-700')
+                    
+                    with ui.row().classes('items-center gap-2'):
+                        ui.icon('public', size='sm').classes('text-teal-600')
+                        ui.label('Web: ashoka-ai.hopto.org').classes('text-sm text-gray-700')
+            
+            # Footer
+            with ui.card().classes('w-full bg-gray-100'):
+                with ui.column().classes('items-center gap-1'):
+                    ui.label('Platform Version: 1.0.0').classes('text-sm text-gray-600')
+                    ui.label('Hosted on AWS Cloud Infrastructure').classes('text-xs text-gray-500')
+    
     def _create_profile_panel(self):
         """Create profile panel as a full page (like help panel)"""
         role_color = 'red' if self.current_user_role == 'admin' else 'blue' if self.current_user_role == 'creator' else 'green'
@@ -3090,8 +3216,8 @@ class AshokaGovDashboard:
                     with ui.row().classes('items-center gap-3'):
                         ui.avatar(color='white', text_color='teal-700', icon='person', size='xl').classes('shadow-lg')
                         with ui.column().classes('gap-1'):
-                            ui.label(self.t('user_profile')).classes('text-3xl font-bold').style('color: white;')
-                            ui.label(self.current_email).classes('text-lg').style('color: white; opacity: 0.9;')
+                            ui.label(self.t('user_profile')).classes('text-3xl font-bold').style('color: #1f2937;')
+                            ui.label(self.current_email).classes('text-lg').style('color: #1f2937; opacity: 0.9;')
                     ui.badge(self.current_user_role.upper(), color=role_color).classes('text-sm font-semibold px-4 py-2')
             
             # User Information Card
@@ -3143,9 +3269,9 @@ class AshokaGovDashboard:
             # Header
             with ui.card().classes('w-full p-6').style('background: linear-gradient(to right, #14b8a6, #06b6d4);'):
                 with ui.row().classes('items-center gap-3 mb-2'):
-                    ui.icon('settings', size='xl').style('color: white;')
-                    ui.label(self.t('settings_preferences')).classes('text-3xl font-bold').style('color: white;')
-                ui.label('Customize your experience').classes('text-lg').style('color: white; opacity: 0.9;')
+                    ui.icon('settings', size='xl').style('color: #1f2937;')
+                    ui.label(self.t('settings_preferences')).classes('text-3xl font-bold').style('color: #1f2937;')
+                ui.label('Customize your experience').classes('text-lg').style('color: #1f2937; opacity: 0.9;')
             
             # Language & Region Card
             with ui.card().classes('w-full'):
@@ -3896,12 +4022,43 @@ class AshokaGovDashboard:
                         ).props('flat').classes('mt-3')
     
     def _copy_to_clipboard(self, text: str):
-        """Copy text to clipboard with proper escaping and error handling"""
+        """Copy text to clipboard with proper escaping and error handling - works on EC2/HTTPS"""
         try:
             payload = json.dumps(text)
-            ui.run_javascript(
-                f"navigator.clipboard.writeText({payload}).then(() => {{ console.log('Copied to clipboard'); }}).catch((err) => {{ console.error('Clipboard copy failed:', err); }});"
-            )
+            # Use modern clipboard API with fallback for non-HTTPS environments
+            ui.run_javascript(f'''
+                (async () => {{
+                    try {{
+                        // Try modern clipboard API (requires HTTPS)
+                        if (navigator.clipboard && window.isSecureContext) {{
+                            await navigator.clipboard.writeText({payload});
+                            console.log('Copied to clipboard using Clipboard API');
+                        }} else {{
+                            // Fallback for non-HTTPS: create temporary textarea
+                            const textArea = document.createElement("textarea");
+                            textArea.value = {payload};
+                            textArea.style.position = "fixed";
+                            textArea.style.left = "-999999px";
+                            textArea.style.top = "-999999px";
+                            document.body.appendChild(textArea);
+                            textArea.focus();
+                            textArea.select();
+                            try {{
+                                document.execCommand('copy');
+                                console.log('Copied to clipboard using execCommand fallback');
+                            }} catch (err) {{
+                                console.error('Fallback copy failed:', err);
+                                throw err;
+                            }} finally {{
+                                textArea.remove();
+                            }}
+                        }}
+                    }} catch (err) {{
+                        console.error('Clipboard copy failed:', err);
+                        throw err;
+                    }}
+                }})();
+            ''')
             ui.notify('Copied to clipboard!', type='positive')
         except Exception as e:
             logger.error(f"Clipboard operation failed: {e}")
@@ -5095,12 +5252,43 @@ class AshokaGovDashboard:
             ui.notify(f'Generation failed: {str(e)}', type='negative')
     
     def _copy_to_clipboard(self, text: str):
-        """Copy text to clipboard with proper escaping and error handling"""
+        """Copy text to clipboard with proper escaping and error handling - works on EC2/HTTPS"""
         try:
             payload = json.dumps(text)
-            ui.run_javascript(
-                f"navigator.clipboard.writeText({payload}).then(() => {{ console.log('Copied to clipboard'); }}).catch((err) => {{ console.error('Clipboard copy failed:', err); }});"
-            )
+            # Use modern clipboard API with fallback for non-HTTPS environments
+            ui.run_javascript(f'''
+                (async () => {{
+                    try {{
+                        // Try modern clipboard API (requires HTTPS)
+                        if (navigator.clipboard && window.isSecureContext) {{
+                            await navigator.clipboard.writeText({payload});
+                            console.log('Copied to clipboard using Clipboard API');
+                        }} else {{
+                            // Fallback for non-HTTPS: create temporary textarea
+                            const textArea = document.createElement("textarea");
+                            textArea.value = {payload};
+                            textArea.style.position = "fixed";
+                            textArea.style.left = "-999999px";
+                            textArea.style.top = "-999999px";
+                            document.body.appendChild(textArea);
+                            textArea.focus();
+                            textArea.select();
+                            try {{
+                                document.execCommand('copy');
+                                console.log('Copied to clipboard using execCommand fallback');
+                            }} catch (err) {{
+                                console.error('Fallback copy failed:', err);
+                                throw err;
+                            }} finally {{
+                                textArea.remove();
+                            }}
+                        }}
+                    }} catch (err) {{
+                        console.error('Clipboard copy failed:', err);
+                        throw err;
+                    }}
+                }})();
+            ''')
             ui.notify('Copied to clipboard!', type='positive')
         except Exception as e:
             logger.error(f"Clipboard operation failed: {e}")
