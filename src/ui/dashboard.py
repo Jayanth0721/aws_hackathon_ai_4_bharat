@@ -1452,7 +1452,7 @@ class AshokaGovDashboard:
                 with ui.column().classes('flex-1 min-w-[280px]'):
                     ui.label('How It Works').classes('text-xl font-bold mb-3 text-sky-700')
                     checkpoints = [
-                        ('Upload or enter content', 'Text, image, video, document, or YouTube URL'),
+                        ('Upload or enter content', 'Text, image, video, or document'),
                         ('Analyze and transform', 'Generate insights and platform-ready outputs'),
                         ('Track performance', 'Review quality/risk trends and system health'),
                         ('Respond quickly', 'Act on alerts and security events'),
@@ -2555,7 +2555,7 @@ class AshokaGovDashboard:
                             alert['time_ago']
                         )
             
-            # Only show notification if not processing YouTube
+            # Only show notification if not processing media
             if show_notification and not self._is_processing_operation_running():
                 ui.notify('Alerts refreshed', type='positive')
             

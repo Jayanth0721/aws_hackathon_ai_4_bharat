@@ -121,14 +121,6 @@ Login → Set Restrictions → Monitor Security → Review User Activity → Man
    5. Wait for processing (10-30 seconds)
    ```
 
-   **Option C: YouTube URL**
-   ```
-   1. Select "YOUTUBE" tab
-   2. Paste YouTube URL
-   3. Click "Analyze Video"
-   4. Wait for transcript extraction (30-60 seconds)
-   ```
-
 4. **Review Analysis Results**
    ```
    Results display inline with:

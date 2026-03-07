@@ -87,7 +87,6 @@ Open http://localhost:8080 in your browser.
 **AI-powered content analysis with comprehensive insights**
 
 - **Multi-Format Support**: Text, Audio, Video, Images, Documents (PDF, DOCX)
-- **YouTube Integration**: Direct URL analysis with transcript extraction
 - **Sentiment Analysis**: Positive, Negative, Neutral with confidence scores
 - **Quality Scoring**: 0-100% quality metrics based on multiple factors
 - **Keyword Extraction**: Automatic identification of key terms
@@ -296,7 +295,6 @@ ashoka/
 │   │   ├── content_transformer.py # Multi-platform transformation
 │   │   ├── security_service.py    # Security and restrictions
 │   │   ├── monitoring_service.py  # Metrics and monitoring
-│   │   ├── youtube_analyzer.py    # YouTube integration
 │   │   ├── document_processor.py  # PDF/DOCX processing
 │   │   └── media_processor.py     # Audio/video processing
 │   ├── database/
@@ -511,13 +509,32 @@ See [EC2_UPDATE_GUIDE.md](EC2_UPDATE_GUIDE.md) for detailed instructions on push
 
 ## 📚 Documentation
 
-- **[WORKFLOW.md](WORKFLOW.md)** - Complete platform workflows and use cases
-- **[SCRIPTS.md](SCRIPTS.md)** - Detailed script documentation and usage
+### User Guides
+- **[WORKFLOW.md](WORKFLOW.md)** - Complete workflows, use cases, and best practices
+  - User roles and permissions
+  - Step-by-step workflows for all features
+  - Real-world scenarios (Social Media Manager, Compliance Officer, Marketing Team)
+  - Troubleshooting and optimization tips
+
+### Technical Documentation
+- **[SCRIPTS.md](SCRIPTS.md)** - Complete technical reference
+  - Platform architecture overview
+  - Startup scripts (start.sh, start.bat, run_dashboard.py)
+  - Deployment scripts and configurations
+  - Service architecture and API integration
+  - Database management and automation
+  - Performance optimization strategies
+
+### Setup & Deployment
 - **[SETUP.md](SETUP.md)** - Detailed setup instructions
-- **[FEATURES.md](FEATURES.md)** - Complete feature documentation
-- **[COST_OPTIMIZATION.md](COST_OPTIMIZATION.md)** - Cost analysis and optimization
 - **[EC2_UPDATE_GUIDE.md](EC2_UPDATE_GUIDE.md)** - EC2 deployment and updates
 - **[AWS_DEPLOYMENT_SUMMARY.md](AWS_DEPLOYMENT_SUMMARY.md)** - AWS deployment overview
+- **[HOSTING.md](HOSTING.md)** - Hosting and domain configuration
+
+### Feature Documentation
+- **[FEATURES.md](FEATURES.md)** - Complete feature documentation
+- **[COST_OPTIMIZATION.md](COST_OPTIMIZATION.md)** - Cost analysis and optimization
+- **[RECENT_FIXES.md](RECENT_FIXES.md)** - Latest updates and bug fixes
 
 ---
 
@@ -526,26 +543,37 @@ See [EC2_UPDATE_GUIDE.md](EC2_UPDATE_GUIDE.md) for detailed instructions on push
 ### For Content Creators
 - Analyze content quality before publishing
 - Transform blog posts for multiple social platforms
-- Generate AI images for content illustration
+- Generate AI images for content illustration (FREE via Cloudflare)
 - Monitor content performance and quality trends
+- **Example**: Social Media Manager creating daily posts across LinkedIn, Twitter, and Instagram in 30 minutes
 
 ### For Marketing Teams
 - Ensure brand consistency across platforms
 - Detect policy violations before publishing
 - Track content quality metrics
 - Automate multi-platform content distribution
+- **Example**: Marketing team launching multi-channel campaign with quality assurance in 2 hours
 
 ### For Enterprises
 - Govern AI-generated content
 - Maintain security and compliance
 - Monitor user activity and access
 - Control content generation with restrictions
+- **Example**: Compliance Officer conducting weekly audits with complete audit trails
+
+### For Startups
+- Create professional content on a budget
+- Cost-optimized image generation (FREE)
+- Scale content production efficiently
+- **Example**: Founder creating weekly content for <$1/year
 
 ### For Developers
 - Integrate AI capabilities into applications
 - Build content governance workflows
 - Monitor AI API usage and costs
 - Implement role-based access control
+
+**For detailed workflows and scenarios, see [WORKFLOW.md](WORKFLOW.md)**
 
 ---
 
@@ -579,10 +607,18 @@ Built for AWS Hackathon 2026
 
 ## 🤝 Support & Contributing
 
-For issues, questions, or contributions:
-1. Check the documentation files
-2. Review [WORKFLOW.md](WORKFLOW.md) for usage patterns
-3. See [SCRIPTS.md](SCRIPTS.md) for automation details
+### Getting Help
+1. **Documentation**: Check the comprehensive docs in the repository
+   - [WORKFLOW.md](WORKFLOW.md) - User workflows and best practices
+   - [SCRIPTS.md](SCRIPTS.md) - Technical reference and automation
+   - [SETUP.md](SETUP.md) - Setup and troubleshooting
+2. **Common Issues**: See troubleshooting sections in documentation
+3. **Use Cases**: Review real-world scenarios in [WORKFLOW.md](WORKFLOW.md)
+
+### Quick Links
+- **User Workflows**: [WORKFLOW.md](WORKFLOW.md) - Complete guide for all user roles
+- **Technical Details**: [SCRIPTS.md](SCRIPTS.md) - Architecture, scripts, and automation
+- **Cost Analysis**: [COST_OPTIMIZATION.md](COST_OPTIMIZATION.md) - Detailed cost breakdown
 
 ---
 

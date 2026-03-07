@@ -104,9 +104,9 @@ Open your browser and navigate to:
 http://localhost:8080
 ```
 
-### 8. (Optional) Install YouTube Analysis Dependencies
+### 8. (Optional) Install Media Processing Dependencies
 
-To enable YouTube video analysis feature:
+To enable audio and video analysis features:
 
 #### Install yt-dlp
 
@@ -140,7 +140,7 @@ pip install openai-whisper
 
 **Note**: Whisper requires PyTorch. It will be installed automatically, but may take some time.
 
-#### Verify YouTube Analysis Setup
+#### Verify Media Processing Setup
 
 After installing dependencies, restart the application:
 ```bash
@@ -149,11 +149,11 @@ python run_dashboard.py
 
 Check the console for:
 ```
-✅ yt-dlp is available for YouTube processing
+✅ yt-dlp is available for video processing
 ✅ Whisper model loaded successfully (base)
 ```
 
-If you see these messages, YouTube analysis is ready to use!
+If you see these messages, media processing is ready to use!
 
 ## Login Process
 
@@ -236,9 +236,11 @@ python -c "from google import genai; import os; from dotenv import load_dotenv; 
 - Verify: `ffmpeg -version`
 - Restart terminal/application
 
-### Issue: "YouTube video unavailable"
+### Issue: "Video processing failed"
 **Solution**:
-- Check if video is private, deleted, or region-restricted
+- Check if video file is corrupted or in unsupported format
+- Ensure FFmpeg is installed and in PATH
+- Try with a smaller video file first
 - Try a different video
 - Verify URL format is correct
 

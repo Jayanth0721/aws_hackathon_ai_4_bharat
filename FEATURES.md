@@ -63,65 +63,6 @@ Upload files for future analysis (currently showing preview with remove option).
 - File preview will be cleared
 - You can upload another file
 
-### YouTube Video Analysis (NEW!)
-
-Analyze YouTube videos directly from URL without downloading.
-
-**How to use:**
-1. Navigate to "Content Intelligence & Analysis"
-2. Select "YOUTUBE" tab
-3. Paste a YouTube URL
-4. Choose analysis mode:
-   - **Quick Summary**: Get video metadata only (fast)
-   - **Full Analysis**: Complete transcription + AI analysis (2-5 minutes)
-5. Click "Analyze Video"
-
-**Supported URL formats:**
-- Standard: `https://www.youtube.com/watch?v=VIDEO_ID`
-- Shortened: `https://youtu.be/VIDEO_ID`
-- With parameters: `https://www.youtube.com/watch?v=VIDEO_ID&t=30s`
-- With timestamps: URLs with `&t=` parameter
-- Shorts: `https://www.youtube.com/shorts/VIDEO_ID`
-
-**Quick Summary includes:**
-- Video title
-- Channel name
-- Duration
-- View count
-- Thumbnail
-- Description
-
-**Full Analysis includes:**
-- All Quick Summary information
-- Complete transcript (powered by Whisper AI)
-- AI-generated summary (powered by Gemini AI)
-- Sentiment analysis
-- Keywords extraction
-- Topics identification
-- Key takeaways
-- Word and character count
-
-**Features:**
-- **Caching**: Transcriptions cached for 24 hours (faster repeat analysis)
-- **Rate Limiting**: 10 analyses per hour per user
-- **History Tracking**: All analyses saved to your history
-- **Error Handling**: Clear error messages for issues
-- **Progress Indicators**: Real-time status updates during processing
-
-**Limitations:**
-- Maximum video duration: 2 hours
-- Requires yt-dlp installation
-- Requires Whisper AI for transcription
-- Requires Gemini AI for content analysis
-
-**Common errors:**
-- "Invalid YouTube URL": Check URL format
-- "Video unavailable": Video may be private, deleted, or region-restricted
-- "Video too long": Select a video under 2 hours
-- "Download failed": Network issue or video restrictions
-
-**Results are stored** in database and appear in query history.
-
 ### Analysis History
 
 View all previously analyzed content.
@@ -531,8 +472,6 @@ These features will be available in future updates:
 8. **API Access**: Programmatic access to features
 9. **Batch Processing**: Process multiple files at once
 10. **Export Options**: Export data in various formats
-11. **YouTube Playlist Analysis**: Analyze entire playlists
-12. **YouTube Subtitle Integration**: Use existing subtitles when available
 
 ---
 
