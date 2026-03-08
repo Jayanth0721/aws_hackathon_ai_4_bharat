@@ -788,9 +788,9 @@ class AshokaGovDashboard:
                     # Right side: Date-time display and role
                     with ui.row().classes('items-center gap-4'):
                         # Calendar/Date-Time display (moved from header)
-                        with ui.card().classes('timer-shell px-4 py-2 shadow-lg'):
+                        with ui.card().classes('px-4 py-2 shadow-lg'):
                             with ui.row().classes('items-center gap-2'):
-                                ui.icon('calendar_today', size='sm').classes('text-white')
+                                ui.icon('calendar_today', size='sm')
                                 # Get current date and time with timezone
                                 timezone = self.user_preferences.get('timezone', 'IST')
                                 if timezone == 'IST':

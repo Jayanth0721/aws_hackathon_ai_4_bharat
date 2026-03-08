@@ -46,7 +46,7 @@ Ashoka is an enterprise-grade GenAI governance platform that provides:
 │         │          ┌──────────────┐                         │
 │         │          │  AI Services │                         │
 │         │          ├──────────────┤                         │
-│         │          │ Gemini API   │ (Text/Audio/Video)      │
+│         │          │ Multi-Engine │ (Gemini + Sarvam AI)    │
 │         └─────────►│ Son of Ashoka│ (Image Gen - FREE)      │
 │                    └──────────────┘                         │
 │                                                             │
@@ -66,8 +66,11 @@ Ashoka is an enterprise-grade GenAI governance platform that provides:
 - RESTful API patterns
 
 **AI/ML Layer:**
-- Google Gemini API (gemini-2.5-flash)
-- Son of Ashoka API (Cloudflare Workers)
+- Multi-Engine AI System:
+  - Google Gemini API (gemini-2.0-flash) - Primary engine
+  - Sarvam AI (sarvam-m) - Fallback for Indian languages
+  - Gemini Engine 3 - Additional fallback
+- Son of Ashoka API (Cloudflare Workers) - Image generation
 
 **Data Layer:**
 - DuckDB (local, file-based)
@@ -215,6 +218,8 @@ db_schema.initialize_schema()
 # Create default users
 from src.services.auth_service import auth_service
 auth_service.signup("admin", "admin@ashoka.ai", "admin123", "admin")
+auth_service.signup("creator", "creator@ashoka.ai", "creator123", "creator")
+auth_service.signup("guruji", "guruji@ashoka.ai", "guru1", "user")
 auth_service.signup("demo", "demo@ashoka.ai", "demo123", "user")
 
 # Setup routes
@@ -582,7 +587,7 @@ class AuthService:
 **Location**: `src/services/content_analyzer.py`
 
 **Responsibilities:**
-- Content analysis using Gemini API
+- Content analysis using Multi-Engine AI (Gemini + Sarvam AI)
 - Quality score calculation
 - Sentiment detection
 - Keyword extraction
@@ -766,29 +771,35 @@ class MonitoringService:
 
 ## API Integration
 
-### 1. Google Gemini API
+### 1. Multi-Engine AI System
 
-**Purpose**: Content analysis, generation, transformation
+**Purpose**: Content analysis, generation, transformation with automatic fallback
 
 **Configuration:**
 ```python
 # .env
-GOOGLE_API_KEY=your_api_key_here
-USE_GEMINI=true
+GOOGLE_API_KEY=your_gemini_key_here
+GOOGLE_API_KEY_2=your_second_gemini_key  # Optional backup
+SARVAM_API_KEY=your_sarvam_key_here      # Optional fallback
 ```
+
+**Engine Priority:**
+1. Gemini Engine 1 (primary)
+2. Sarvam AI (fallback for Indian languages)
+3. Gemini Engine 3 (additional fallback)
 
 **Usage:**
 ```python
-from src.services.gemini_client import gemini_client
+from src.services.ai_engine import multi_engine_client
 
-# Generate content
-result = gemini_client.generate_content(prompt)
+# Automatic engine selection with fallback
+result = multi_engine_client.generate_content(prompt)
 
 # Analyze content
-analysis = gemini_client.analyze_content(text)
+analysis = multi_engine_client.analyze_content(text)
 ```
 
-**Cost**: ~$0.001-0.002 per request
+**Cost**: ~$0.001-0.002 per request (Gemini), FREE tier available
 
 ---
 

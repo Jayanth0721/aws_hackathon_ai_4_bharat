@@ -55,6 +55,17 @@ The dashboard has been enhanced with several user experience improvements:
 
 ## User Roles & Permissions
 
+### Default Test Accounts
+
+For testing and demonstration purposes, the platform includes:
+
+| Username | Password | Role | Description |
+|----------|----------|------|-------------|
+| admin | admin123 | Admin | Full platform access |
+| creator | creator123 | Creator | Content creation access |
+| guruji | guru1 | User | Standard user access |
+| demo | demo123 | User | Demo/read-only access |
+
 ### 1. User Role (Standard Access)
 **Who**: Content reviewers, analysts, viewers
 
