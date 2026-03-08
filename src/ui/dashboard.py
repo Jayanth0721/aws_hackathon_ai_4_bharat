@@ -804,7 +804,7 @@ class AshokaGovDashboard:
                         
                         # Role badge only (no username)
                         role_color = 'red' if self.current_user_role == 'admin' else 'blue' if self.current_user_role == 'creator' else 'green'
-                        ui.badge(self.current_user_role.upper(), color=role_color).classes('text-sm font-bold').style('color: #000000;')
+                        ui.badge(self.current_user_role.upper(), color=role_color).classes('text-sm').style('color: #000000;')
 
             with ui.element('div').classes('dashboard-grid w-full'):
                 with ui.card().classes('dashboard-sidebar p-3 h-fit'):
