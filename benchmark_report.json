@@ -1,0 +1,189 @@
+{
+  "timestamp": "2026-03-08T18:10:38.787055",
+  "platform": "Ashoka GenAI Governance Platform",
+  "benchmarks": {
+    "database": {
+      "name": "Database Operations",
+      "tests": [
+        {
+          "name": "Database Connection",
+          "duration_ms": 52.37,
+          "success": true
+        },
+        {
+          "name": "Schema Initialization",
+          "duration_ms": 46.5,
+          "success": true
+        },
+        {
+          "name": "Simple Query (SELECT 1)",
+          "duration_ms": 6.81,
+          "success": true
+        },
+        {
+          "name": "User Count Query",
+          "duration_ms": 4.0,
+          "success": true,
+          "result": "3 users"
+        },
+        {
+          "name": "Content Analysis Query",
+          "duration_ms": 1.0,
+          "success": true,
+          "result": "22 records"
+        }
+      ],
+      "average_duration_ms": 22.14,
+      "success_rate": 100.0
+    },
+    "content_analysis": {
+      "name": "Content Analysis",
+      "tests": [
+        {
+          "name": "Analyze Short Text",
+          "text_length": 46,
+          "duration_ms": 3508.62,
+          "success": true,
+          "has_summary": true,
+          "sentiment": "neutral"
+        },
+        {
+          "name": "Analyze Medium Text",
+          "text_length": 550,
+          "duration_ms": 2398.93,
+          "success": true,
+          "has_summary": true,
+          "sentiment": "neutral"
+        },
+        {
+          "name": "Analyze Long Text",
+          "text_length": 2750,
+          "duration_ms": 2130.41,
+          "success": true,
+          "has_summary": true,
+          "sentiment": "neutral"
+        }
+      ],
+      "average_duration_ms": 2679.32,
+      "success_rate": 100.0
+    },
+    "content_transformation": {
+      "name": "Content Transformation",
+      "tests": [
+        {
+          "name": "Single Platform",
+          "platforms": 1,
+          "duration_ms": 0.0,
+          "success": false
+        },
+        {
+          "name": "Two Platforms",
+          "platforms": 2,
+          "duration_ms": 0.0,
+          "success": false
+        },
+        {
+          "name": "Three Platforms",
+          "platforms": 3,
+          "duration_ms": 0.0,
+          "success": false
+        },
+        {
+          "name": "Four Platforms",
+          "platforms": 4,
+          "duration_ms": 0.0,
+          "success": false
+        }
+      ],
+      "average_duration_ms": 0.0,
+      "success_rate": 0.0
+    },
+    "authentication": {
+      "name": "Authentication",
+      "tests": [
+        {
+          "name": "User Authentication",
+          "duration_ms": 1371.36,
+          "success": true
+        },
+        {
+          "name": "OTP Generation",
+          "duration_ms": 0.0,
+          "success": true
+        },
+        {
+          "name": "OTP Verification",
+          "duration_ms": 0.0,
+          "success": true
+        },
+        {
+          "name": "Session Creation",
+          "duration_ms": 582.8,
+          "success": true
+        }
+      ],
+      "average_duration_ms": 488.54,
+      "success_rate": 100.0
+    },
+    "monitoring": {
+      "name": "Monitoring",
+      "tests": [
+        {
+          "name": "Get Quality Metrics",
+          "duration_ms": 0.0,
+          "success": true
+        },
+        {
+          "name": "Get Performance Trends",
+          "duration_ms": 0.0,
+          "success": false
+        },
+        {
+          "name": "Check System Health",
+          "duration_ms": 0.0,
+          "success": false
+        }
+      ],
+      "average_duration_ms": 0.0,
+      "success_rate": 33.33333333333333
+    },
+    "api_tracking": {
+      "name": "API Usage Tracking",
+      "tests": [
+        {
+          "name": "Track API Request",
+          "duration_ms": 5.2,
+          "success": true
+        },
+        {
+          "name": "Get Usage Today",
+          "duration_ms": 0.0,
+          "success": true
+        },
+        {
+          "name": "Get All Usage Today",
+          "duration_ms": 2.0,
+          "success": true
+        },
+        {
+          "name": "Check Engine Availability",
+          "duration_ms": 0.0,
+          "success": true
+        }
+      ],
+      "average_duration_ms": 1.8,
+      "success_rate": 100.0
+    }
+  },
+  "summary": {
+    "total_benchmarks": 6,
+    "total_tests": 23,
+    "successful_tests": 17,
+    "failed_tests": 6,
+    "success_rate": 73.91,
+    "total_duration_ms": 10110.0,
+    "average_duration_ms": 439.57,
+    "fastest_test_ms": 0.0,
+    "slowest_test_ms": 3508.62
+  }
+}
