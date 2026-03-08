@@ -201,7 +201,8 @@ Provide a comprehensive analysis in JSON format."""
         content: str,
         target_platform: str,
         tone: str = "professional",
-        include_hashtags: bool = True
+        include_hashtags: bool = True,
+        user_id: str = None
     ) -> Dict[str, Any]:
         """
         Transform content for a specific platform using Gemini
@@ -211,6 +212,7 @@ Provide a comprehensive analysis in JSON format."""
             target_platform: Target platform
             tone: Desired tone
             include_hashtags: Whether to include hashtags
+            user_id: User ID for usage tracking (optional)
             
         Returns:
             Transformed content with metadata
@@ -270,7 +272,8 @@ Apply the specified style, tone, and constraints."""
             result = self.generate_content(
                 prompt=prompt,
                 system_instruction=system_instruction,
-                temperature=0.7
+                temperature=0.7,
+                user_id=user_id
             )
             
             # Extract JSON from response
@@ -314,7 +317,8 @@ Apply the specified style, tone, and constraints."""
     def analyze_image(
         self,
         image_data: bytes,
-        prompt: str = "Analyze this image and provide detailed insights"
+        prompt: str = "Analyze this image and provide detailed insights",
+        user_id: str = None
     ) -> Dict[str, Any]:
         """
         Analyze image using Gemini Vision
@@ -322,12 +326,23 @@ Apply the specified style, tone, and constraints."""
         Args:
             image_data: Image file bytes
             prompt: Analysis prompt
+            user_id: User ID for usage tracking (optional)
             
         Returns:
             Analysis results
         """
         if not self.is_available():
             raise Exception("Gemini client not initialized. Check API key and installation.")
+        
+        # Track usage
+        try:
+            from src.services.api_usage_tracker import api_usage_tracker
+            if user_id:
+                # Check quota before processing
+                if not api_usage_tracker.can_use_engine(user_id, 'gemini'):
+                    raise Exception("Gemini API quota exceeded for today. Please try again tomorrow or use another engine.")
+        except ImportError:
+            pass
         
         try:
             import base64
@@ -369,6 +384,14 @@ Apply the specified style, tone, and constraints."""
                 )
             )
             
+            # Track successful request
+            try:
+                from src.services.api_usage_tracker import api_usage_tracker
+                if user_id:
+                    api_usage_tracker.track_request(user_id, 'gemini', self.model_name, success=True)
+            except ImportError:
+                pass
+            
             # Calculate metrics
             elapsed_time = (datetime.now() - start_time).total_seconds()
             
@@ -404,6 +427,13 @@ Apply the specified style, tone, and constraints."""
             
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse Gemini vision response as JSON: {e}")
+            # Track failed request
+            try:
+                from src.services.api_usage_tracker import api_usage_tracker
+                if user_id:
+                    api_usage_tracker.track_request(user_id, 'gemini', self.model_name, success=False)
+            except ImportError:
+                pass
             # Return raw response if JSON parsing fails
             return {
                 'description': response_text,
@@ -417,6 +447,13 @@ Apply the specified style, tone, and constraints."""
             }
         except Exception as e:
             logger.error(f"Error analyzing image with Gemini: {e}")
+            # Track failed request
+            try:
+                from src.services.api_usage_tracker import api_usage_tracker
+                if user_id:
+                    api_usage_tracker.track_request(user_id, 'gemini', self.model_name, success=False)
+            except ImportError:
+                pass
             raise
     
     def get_model_info(self) -> Dict[str, Any]:

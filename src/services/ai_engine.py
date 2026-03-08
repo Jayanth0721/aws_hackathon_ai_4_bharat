@@ -167,7 +167,8 @@ class MultiEngineAIClient:
         prompt: str,
         system_instruction: Optional[str] = None,
         temperature: float = 0.7,
-        preferred_engine: Optional[str] = None
+        preferred_engine: Optional[str] = None,
+        user_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Generate content using available AI engines with fallback
@@ -177,12 +178,20 @@ class MultiEngineAIClient:
             system_instruction: System instruction for context
             temperature: Sampling temperature
             preferred_engine: Preferred engine name (optional)
+            user_id: User ID for usage tracking (optional)
             
         Returns:
             Dict with response and metadata
         """
         if not self.is_available():
             raise Exception("No AI engines available. Check API keys and installation.")
+        
+        # Import usage tracker
+        try:
+            from src.services.api_usage_tracker import api_usage_tracker
+            track_usage = True
+        except:
+            track_usage = False
         
         # Determine engine order
         engine_order = self.engine_priority.copy()
@@ -201,6 +210,12 @@ class MultiEngineAIClient:
             if engine not in self.engines:
                 continue
             
+            # Check quota if user_id provided
+            if track_usage and user_id:
+                if not api_usage_tracker.can_use_engine(user_id, engine.value):
+                    logger.warning(f"Quota exceeded for {engine.value}, trying next engine")
+                    continue
+            
             try:
                 logger.info(f"Attempting generation with {engine.value}")
                 
@@ -213,11 +228,23 @@ class MultiEngineAIClient:
                 
                 result['engine_used'] = engine.value
                 logger.info(f"✓ Generation successful with {engine.value}")
+                
+                # Track successful usage
+                if track_usage and user_id:
+                    model = self.engines[engine].get('model', 'unknown')
+                    api_usage_tracker.track_request(user_id, engine.value, model, success=True)
+                
                 return result
                 
             except Exception as e:
                 last_error = e
                 logger.warning(f"✗ {engine.value} failed: {str(e)}")
+                
+                # Track failed usage
+                if track_usage and user_id:
+                    model = self.engines[engine].get('model', 'unknown')
+                    api_usage_tracker.track_request(user_id, engine.value, model, success=False)
+                
                 continue
         
         # All engines failed
@@ -331,9 +358,14 @@ class MultiEngineAIClient:
         result = self.generate_content(prompt, temperature=temperature)
         return result.get('text', '')
     
-    def analyze_content(self, content: str) -> Dict[str, Any]:
+    def analyze_content(self, content: str, preferred_engine: str = None, user_id: str = None) -> Dict[str, Any]:
         """
         Analyze content for sentiment, keywords, topics, etc.
+        
+        Args:
+            content: Content to analyze
+            preferred_engine: Preferred AI engine (optional)
+            user_id: User ID for usage tracking (optional)
         
         Returns structured analysis compatible with existing code
         """
@@ -360,7 +392,13 @@ Provide analysis in this exact JSON format (respond ONLY with valid JSON, no oth
         
         system_instruction = "You are a content analysis expert. Respond ONLY with valid JSON. Do not include any explanations, thinking process, or markdown formatting."
         
-        result = self.generate_content(prompt, system_instruction, temperature=0.3)
+        result = self.generate_content(
+            prompt,
+            system_instruction,
+            temperature=0.3,
+            preferred_engine=preferred_engine,
+            user_id=user_id
+        )
         
         try:
             # Parse JSON from response
@@ -422,6 +460,120 @@ Provide analysis in this exact JSON format (respond ONLY with valid JSON, no oth
                 'topics': [],
                 'takeaways': [],
                 'engine_used': result.get('engine_used', 'unknown') if isinstance(result, dict) else 'unknown'
+            }
+    
+    def transform_content(
+        self,
+        content: str,
+        target_platform: str,
+        tone: str = "professional",
+        include_hashtags: bool = True,
+        preferred_engine: str = None,
+        user_id: str = None
+    ) -> Dict[str, Any]:
+        """
+        Transform content for a specific platform
+        
+        Args:
+            content: Original content
+            target_platform: Target platform
+            tone: Desired tone
+            include_hashtags: Whether to include hashtags
+            preferred_engine: Preferred AI engine (optional)
+            user_id: User ID for usage tracking (optional)
+            
+        Returns:
+            Transformed content with metadata
+        """
+        platform_specs = {
+            'linkedin': {
+                'max_chars': 3000,
+                'style': 'Professional networking post with clear value proposition',
+                'hashtag_count': '3-5'
+            },
+            'twitter': {
+                'max_chars': 280,
+                'style': 'Concise, engaging tweet that captures attention',
+                'hashtag_count': '1-3'
+            },
+            'instagram': {
+                'max_chars': 2200,
+                'style': 'Visual storytelling with engaging narrative',
+                'hashtag_count': '10-15'
+            },
+            'facebook': {
+                'max_chars': 63206,
+                'style': 'Conversational and community-focused',
+                'hashtag_count': '2-5'
+            },
+            'threads': {
+                'max_chars': 500,
+                'style': 'Casual, authentic, and conversational',
+                'hashtag_count': '1-3'
+            }
+        }
+        
+        spec = platform_specs.get(target_platform.lower(), platform_specs['linkedin'])
+        
+        system_instruction = f"""You are an expert social media content creator. Transform content for {target_platform} 
+        following these specifications:
+        - Maximum characters: {spec['max_chars']}
+        - Style: {spec['style']}
+        - Tone: {tone}
+        - Hashtags: {'Include ' + spec['hashtag_count'] + ' relevant hashtags' if include_hashtags else 'No hashtags'}
+        
+        Return a JSON object with:
+        - content: The transformed content
+        - character_count: Number of characters
+        - hashtags: List of hashtags used (if any)
+        - within_limit: Boolean indicating if within character limit
+        
+        Return ONLY valid JSON, no markdown."""
+        
+        prompt = f"""Transform this content for {target_platform}:
+
+{content}
+
+Apply the specified style, tone, and constraints."""
+        
+        result = self.generate_content(
+            prompt=prompt,
+            system_instruction=system_instruction,
+            temperature=0.7,
+            preferred_engine=preferred_engine,
+            user_id=user_id
+        )
+        
+        try:
+            # Extract JSON from response
+            response_text = result['text']
+            if '```json' in response_text:
+                start = response_text.find('```json') + 7
+                end = response_text.find('```', start)
+                response_text = response_text[start:end].strip()
+            elif '```' in response_text:
+                start = response_text.find('```') + 3
+                end = response_text.find('```', start)
+                response_text = response_text[start:end].strip()
+            
+            # Find JSON object
+            if '{' in response_text and '}' in response_text:
+                start = response_text.find('{')
+                end = response_text.rfind('}') + 1
+                response_text = response_text[start:end]
+            
+            data = json.loads(response_text)
+            data['engine_used'] = result.get('engine_used', 'unknown')
+            return data
+        except Exception as e:
+            logger.error(f"Failed to parse transform JSON: {e}")
+            # Return fallback
+            return {
+                'content': result.get('text', content),
+                'character_count': len(result.get('text', content)),
+                'hashtags': [],
+                'within_limit': True,
+                'engine_used': result.get('engine_used', 'unknown')
             }
 
 

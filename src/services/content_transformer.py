@@ -68,7 +68,8 @@ class ContentTransformer:
         content: str,
         platforms: List[str],
         tone: str = 'professional',
-        include_hashtags: bool = True
+        include_hashtags: bool = True,
+        user_id: str = None
     ) -> Dict[str, PlatformContent]:
         """
         Transform content for multiple platforms
@@ -78,6 +79,7 @@ class ContentTransformer:
             platforms: List of target platforms
             tone: Desired tone (professional, casual, storytelling)
             include_hashtags: Whether to include hashtags
+            user_id: User ID for usage tracking (optional)
             
         Returns:
             Dictionary mapping platform names to transformed content
@@ -87,7 +89,7 @@ class ContentTransformer:
         for platform in platforms:
             try:
                 transformed = self._transform_for_platform(
-                    content, platform, tone, include_hashtags
+                    content, platform, tone, include_hashtags, user_id
                 )
                 results[platform] = transformed
             except Exception as e:
@@ -101,7 +103,8 @@ class ContentTransformer:
         content: str,
         platform: str,
         tone: str,
-        include_hashtags: bool
+        include_hashtags: bool,
+        user_id: str = None
     ) -> PlatformContent:
         """Transform content for a specific platform"""
         
@@ -114,7 +117,8 @@ class ContentTransformer:
                     content=content,
                     target_platform=platform_lower,
                     tone=tone,
-                    include_hashtags=include_hashtags
+                    include_hashtags=include_hashtags,
+                    user_id=user_id
                 )
                 
                 # Extract data from AI response

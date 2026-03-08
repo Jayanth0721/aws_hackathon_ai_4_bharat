@@ -23,6 +23,7 @@ class AshokaGovDashboard:
         self.ingestion_service = ContentIngestionService()
         self.analyzer = ContentAnalyzer()
         self.current_user = app.storage.general.get('user_id', 'demo_user')
+        self.current_user_id = self.current_user  # Add user_id attribute for tracking
         self.current_user_role = 'creator'
         self.current_username = 'demo'
         self.current_email = 'demo@ashoka.ai'
@@ -389,16 +390,19 @@ class AshokaGovDashboard:
                 self.current_email = f"{self.current_username}@ashoka.ai"
                 self.current_user_role = user_data.get('role', 'user')
                 self.current_user = user_data.get('user_id', user_id)
+                self.current_user_id = self.current_user  # Sync user_id for tracking
                 logger.info(f"Loaded user context: {self.current_username}, role: {self.current_user_role}")
             else:
                 # Default values if user not found
                 self.current_username = username or 'demo'
                 self.current_email = f"{self.current_username}@ashoka.ai"
                 self.current_user_role = 'user'
+                self.current_user_id = f"user_{self.current_username}"  # Set default user_id
                 logger.warning(f"User {username} not found in database, using defaults")
         except Exception as e:
             logger.warning(f"Failed to load current user context: {e}")
             self.current_user_role = 'user'
+            self.current_user_id = 'user_demo'  # Fallback user_id
     
     def t(self, key: str) -> str:
         """Get translation for current language"""
@@ -409,6 +413,10 @@ class AshokaGovDashboard:
         
         # Reload user context to get current logged-in user details
         self._load_current_user_context()
+        
+        # Ensure current_user_id is synced with current_user
+        if hasattr(self, 'current_user'):
+            self.current_user_id = self.current_user
         
         # Custom CSS aligned with auth theme (cream + teal + blue)
         ui.add_head_html('''
@@ -1918,13 +1926,108 @@ class AshokaGovDashboard:
             with ui.tab_panels(input_tabs, value=text_tab).classes('w-full'):
                 # Text input panel
                 with ui.tab_panel(text_tab):
+                    # AI Engine Usage Dashboard
+                    with ui.card().classes('w-full bg-gradient-to-r from-purple-50 to-blue-50 mb-4'):
+                        ui.label('🚀 AI Engine Usage & Selection').classes('text-lg font-bold text-gray-800 mb-3')
+                        
+                        # Get usage stats
+                        try:
+                            from src.services.api_usage_tracker import api_usage_tracker
+                            usage_stats = api_usage_tracker.get_all_usage_today(self.current_user_id)
+                            
+                            # Engine usage cards
+                            with ui.row().classes('w-full gap-3'):
+                                # Engine 1: Gemini
+                                with ui.card().classes('flex-1 bg-white'):
+                                    with ui.column().classes('gap-2'):
+                                        with ui.row().classes('items-center justify-between'):
+                                            ui.label('Engine 1: Gemini').classes('text-sm font-bold text-blue-600')
+                                            self.gemini_badge = ui.badge(f"{usage_stats['gemini']['used']}/{usage_stats['gemini']['limit']}", color='blue').classes('text-xs')
+                                        
+                                        # Progress bar
+                                        percentage = usage_stats['gemini']['percentage']
+                                        color = 'green' if percentage < 70 else 'orange' if percentage < 90 else 'red'
+                                        self.gemini_progress = ui.linear_progress(value=percentage/100, color=color).classes('w-full')
+                                        
+                                        with ui.row().classes('justify-between w-full'):
+                                            ui.label(f"Used: {usage_stats['gemini']['used']}").classes('text-xs text-gray-600')
+                                            self.gemini_remaining = ui.label(f"Left: {usage_stats['gemini']['remaining']}").classes('text-xs font-semibold text-gray-800')
+                                
+                                # Engine 2: Sarvam AI
+                                with ui.card().classes('flex-1 bg-white'):
+                                    with ui.column().classes('gap-2'):
+                                        with ui.row().classes('items-center justify-between'):
+                                            ui.label('Engine 2: Sarvam AI').classes('text-sm font-bold text-green-600')
+                                            self.sarvam_badge = ui.badge(f"{usage_stats['sarvam']['used']}/{usage_stats['sarvam']['limit']}", color='green').classes('text-xs')
+                                        
+                                        # Progress bar
+                                        percentage = usage_stats['sarvam']['percentage']
+                                        color = 'green' if percentage < 70 else 'orange' if percentage < 90 else 'red'
+                                        self.sarvam_progress = ui.linear_progress(value=percentage/100, color=color).classes('w-full')
+                                        
+                                        with ui.row().classes('justify-between w-full'):
+                                            ui.label(f"Used: {usage_stats['sarvam']['used']}").classes('text-xs text-gray-600')
+                                            self.sarvam_remaining = ui.label(f"Left: {usage_stats['sarvam']['remaining']}").classes('text-xs font-semibold text-gray-800')
+                                
+                                # Engine 3: Gemini Backup
+                                with ui.card().classes('flex-1 bg-white'):
+                                    with ui.column().classes('gap-2'):
+                                        with ui.row().classes('items-center justify-between'):
+                                            ui.label('Engine 3: Gemini').classes('text-sm font-bold text-purple-600')
+                                            self.gemini3_badge = ui.badge(f"{usage_stats['gemini3']['used']}/{usage_stats['gemini3']['limit']}", color='purple').classes('text-xs')
+                                        
+                                        # Progress bar
+                                        percentage = usage_stats['gemini3']['percentage']
+                                        color = 'green' if percentage < 70 else 'orange' if percentage < 90 else 'red'
+                                        self.gemini3_progress = ui.linear_progress(value=percentage/100, color=color).classes('w-full')
+                                        
+                                        with ui.row().classes('justify-between w-full'):
+                                            ui.label(f"Used: {usage_stats['gemini3']['used']}").classes('text-xs text-gray-600')
+                                            self.gemini3_remaining = ui.label(f"Left: {usage_stats['gemini3']['remaining']}").classes('text-xs font-semibold text-gray-800')
+                            
+                            # Engine selector
+                            with ui.row().classes('items-center gap-3 mt-3'):
+                                ui.label('Select Engine:').classes('text-sm font-semibold text-gray-700')
+                                self.engine_selector = ui.select(
+                                    options={
+                                        'auto': '🤖 Auto (Recommended)',
+                                        'gemini': f'⚡ Engine 1: Gemini ({usage_stats["gemini"]["remaining"]} left)',
+                                        'sarvam': f'🌏 Engine 2: Sarvam AI ({usage_stats["sarvam"]["remaining"]} left)',
+                                        'gemini3': f'🔄 Engine 3: Gemini Backup ({usage_stats["gemini3"]["remaining"]} left)'
+                                    },
+                                    value='auto'
+                                ).classes('flex-1').props('dense')
+                                
+                                ui.button(
+                                    icon='refresh',
+                                    on_click=lambda: self._refresh_engine_usage()
+                                ).props('flat dense').tooltip('Refresh usage stats')
+                        
+                        except Exception as e:
+                            logger.error(f"Error loading engine usage: {e}")
+                            ui.label('⚠️ Engine usage tracking unavailable').classes('text-sm text-orange-600')
+                            self.engine_selector = ui.select(
+                                options={'auto': '🤖 Auto (Recommended)'},
+                                value='auto'
+                            ).classes('w-full')
+                            # Initialize empty references
+                            self.gemini_badge = None
+                            self.gemini_progress = None
+                            self.gemini_remaining = None
+                            self.sarvam_badge = None
+                            self.sarvam_progress = None
+                            self.sarvam_remaining = None
+                            self.gemini3_badge = None
+                            self.gemini3_progress = None
+                            self.gemini3_remaining = None
+                    
                     # AI Model Information Card
                     with ui.card().classes('w-full bg-blue-50 mb-4'):
                         with ui.row().classes('items-start gap-3'):
                             ui.icon('info', size='sm').classes('text-blue-600 mt-1')
                             with ui.column().classes('flex-1 gap-1'):
                                 ui.label('AI Analysis Information').classes('text-sm font-semibold text-blue-900')
-                                ui.label('Powered by: Gemini AI (50 requests/day) with Sarvam AI backup').classes('text-xs text-blue-700')
+                                ui.label('Powered by: Multi-Engine AI (Gemini + Sarvam AI + Gemini Backup)').classes('text-xs text-blue-700')
                                 ui.label('Character Limit: 1,000 characters per analysis').classes('text-xs text-blue-700')
                                 ui.label('Analysis includes: Sentiment, Keywords, Topics, Quality Score, Takeaways').classes('text-xs text-blue-700')
                     
@@ -3819,6 +3922,61 @@ class AshokaGovDashboard:
         self.text_analysis_container.clear()
         ui.notify('Text and analysis cleared', type='info')
     
+    def _refresh_engine_usage(self):
+        """Refresh engine usage statistics"""
+        try:
+            from src.services.api_usage_tracker import api_usage_tracker
+            usage_stats = api_usage_tracker.get_all_usage_today(self.current_user_id)
+            
+            # Update Gemini (Engine 1)
+            if hasattr(self, 'gemini_badge') and self.gemini_badge:
+                self.gemini_badge.set_text(f"{usage_stats['gemini']['used']}/{usage_stats['gemini']['limit']}")
+            if hasattr(self, 'gemini_progress') and self.gemini_progress:
+                percentage = usage_stats['gemini']['percentage']
+                color = 'green' if percentage < 70 else 'orange' if percentage < 90 else 'red'
+                self.gemini_progress.set_value(percentage/100)
+                self.gemini_progress.props(f'color={color}')
+            if hasattr(self, 'gemini_remaining') and self.gemini_remaining:
+                self.gemini_remaining.set_text(f"Left: {usage_stats['gemini']['remaining']}")
+            
+            # Update Sarvam AI (Engine 2)
+            if hasattr(self, 'sarvam_badge') and self.sarvam_badge:
+                self.sarvam_badge.set_text(f"{usage_stats['sarvam']['used']}/{usage_stats['sarvam']['limit']}")
+            if hasattr(self, 'sarvam_progress') and self.sarvam_progress:
+                percentage = usage_stats['sarvam']['percentage']
+                color = 'green' if percentage < 70 else 'orange' if percentage < 90 else 'red'
+                self.sarvam_progress.set_value(percentage/100)
+                self.sarvam_progress.props(f'color={color}')
+            if hasattr(self, 'sarvam_remaining') and self.sarvam_remaining:
+                self.sarvam_remaining.set_text(f"Left: {usage_stats['sarvam']['remaining']}")
+            
+            # Update Gemini3 (Engine 3)
+            if hasattr(self, 'gemini3_badge') and self.gemini3_badge:
+                self.gemini3_badge.set_text(f"{usage_stats['gemini3']['used']}/{usage_stats['gemini3']['limit']}")
+            if hasattr(self, 'gemini3_progress') and self.gemini3_progress:
+                percentage = usage_stats['gemini3']['percentage']
+                color = 'green' if percentage < 70 else 'orange' if percentage < 90 else 'red'
+                self.gemini3_progress.set_value(percentage/100)
+                self.gemini3_progress.props(f'color={color}')
+            if hasattr(self, 'gemini3_remaining') and self.gemini3_remaining:
+                self.gemini3_remaining.set_text(f"Left: {usage_stats['gemini3']['remaining']}")
+            
+            # Update engine selector options
+            if hasattr(self, 'engine_selector'):
+                current_value = self.engine_selector.value
+                self.engine_selector.options = {
+                    'auto': '🤖 Auto (Recommended)',
+                    'gemini': f'⚡ Engine 1: Gemini ({usage_stats["gemini"]["remaining"]} left)',
+                    'sarvam': f'🌏 Engine 2: Sarvam AI ({usage_stats["sarvam"]["remaining"]} left)',
+                    'gemini3': f'🔄 Engine 3: Gemini Backup ({usage_stats["gemini3"]["remaining"]} left)'
+                }
+                self.engine_selector.update()
+            
+            ui.notify('Engine usage refreshed', type='positive')
+        except Exception as e:
+            logger.error(f"Error refreshing engine usage: {e}")
+            ui.notify('Could not refresh usage stats', type='warning')
+    
     def _update_char_counter(self, text: str):
         """Update character counter display"""
         char_count = len(text) if text else 0
@@ -3858,11 +4016,17 @@ class AshokaGovDashboard:
             ui.notify('Please enter content to analyze', type='warning')
             return
         
+        # Get selected engine
+        selected_engine = None
+        if hasattr(self, 'engine_selector') and self.engine_selector.value != 'auto':
+            selected_engine = self.engine_selector.value
+        
         # Track operation
         self.current_operation = {
             'type': 'Analysis',
             'content': content,
-            'progress': 0
+            'progress': 0,
+            'engine': selected_engine or 'auto'
         }
         
         try:
@@ -3872,7 +4036,8 @@ class AshokaGovDashboard:
                 with ui.card().classes('w-full text-center p-8 bg-blue-50 border-2 border-blue-500'):
                     ui.spinner(size='xl', color='primary')
                     ui.label('AI is analyzing your content...').classes('text-xl font-bold mt-4')
-                    ui.label('Powered by: Google Gemini (Cloud API)').classes('text-lg font-bold text-blue-700 mt-2')
+                    engine_text = f'Engine: {selected_engine.upper()}' if selected_engine else 'Multi-Engine AI (Auto)'
+                    ui.label(f'Powered by: {engine_text}').classes('text-lg font-bold text-blue-700 mt-2')
                     progress_label = ui.label('Ingesting content...').classes('text-sm text-gray-600 mt-2')
             
             # Check if operation should be paused
@@ -3893,16 +4058,23 @@ class AshokaGovDashboard:
             self.current_operation['progress'] = 30
             progress_label.set_text('Running AI analysis...')
             
-            # Analyze content (run in executor to not block UI)
+            # Analyze content with selected engine (run in executor to not block UI)
             analysis = await loop.run_in_executor(
                 None,
-                self.analyzer.analyze_content,
-                version.version_id,
-                content
+                lambda: self.analyzer.analyze_content(
+                    version.version_id,
+                    content,
+                    preferred_engine=selected_engine,
+                    user_id=self.current_user_id
+                )
             )
             self.current_analysis = analysis
             self.current_operation['progress'] = 100
             progress_label.set_text('Complete!')
+            
+            # Refresh engine usage stats
+            if hasattr(self, 'engine_selector'):
+                self._refresh_engine_usage()
             
             # Store in ashoka_contentint table
             content_id = str(uuid.uuid4())
@@ -4028,8 +4200,13 @@ class AshokaGovDashboard:
                 content,
                 platforms,
                 tone,
-                include_hashtags
+                include_hashtags,
+                self.current_user_id
             )
+            
+            # Refresh engine usage stats after transformation
+            if hasattr(self, 'engine_selector'):
+                self._refresh_engine_usage()
             
             # Store in database
             import uuid
@@ -4137,7 +4314,7 @@ class AshokaGovDashboard:
                             ui.label('Hashtags:').classes('text-sm font-medium mt-3 mb-2')
                             with ui.row().classes('gap-2 flex-wrap'):
                                 for hashtag in platform_content.hashtags:
-                                    ui.chip(f'#{hashtag}', icon='tag').props(f'outline color={badge_color}').classes('text-xs')
+                                    ui.badge(f'#{hashtag}', text_color='white').props(f'color={badge_color}').classes('text-xs')
                         
                         # Copy button
                         ui.button(
@@ -4313,8 +4490,13 @@ class AshokaGovDashboard:
                 None,
                 gemini_client.analyze_image,
                 file_content,
-                "Analyze this image in detail and provide comprehensive insights"
+                "Analyze this image in detail and provide comprehensive insights",
+                self.current_user_id  # user_id for tracking
             )
+            
+            # Refresh engine usage stats after image analysis
+            if hasattr(self, 'engine_selector'):
+                self._refresh_engine_usage()
             
             # Save image file
             import uuid
@@ -5249,16 +5431,25 @@ class AshokaGovDashboard:
             loop = asyncio.get_event_loop()
             
             if gen_type == 'Text/Notes':
-                # Generate text content using Gemini
+                # Generate text content using Multi-Engine AI
                 generation_prompt = f"Generate professional content based on this prompt:\n\n{prompt}\n\nProvide a well-structured, detailed response."
                 
+                from src.services.ai_engine import ai_client
                 result = await loop.run_in_executor(
                     None,
-                    gemini_client.generate_content,
-                    generation_prompt
+                    ai_client.generate_content,
+                    generation_prompt,
+                    None,  # system_instruction
+                    0.7,   # temperature
+                    None,  # preferred_engine
+                    self.current_user_id  # user_id for tracking
                 )
                 
                 generated_text = result.get('text', 'No content generated')
+                
+                # Refresh engine usage stats after generation
+                if hasattr(self, 'engine_selector'):
+                    self._refresh_engine_usage()
                 
                 # Display generated text
                 self.generator_output_container.clear()

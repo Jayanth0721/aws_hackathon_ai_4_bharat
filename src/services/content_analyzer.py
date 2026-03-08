@@ -31,15 +31,26 @@ class ContentAnalyzer:
         
         self.db = db_schema
     
-    def analyze_content(self, version_id: str, content: str) -> ContentAnalysis:
-        """Perform comprehensive content analysis"""
-        logger.info(f"Analyzing content: {version_id} (using {self.ai_provider})")
+    def analyze_content(self, version_id: str, content: str, preferred_engine: str = None, user_id: str = None) -> ContentAnalysis:
+        """Perform comprehensive content analysis
+        
+        Args:
+            version_id: Content version ID
+            content: Content to analyze
+            preferred_engine: Preferred AI engine (optional)
+            user_id: User ID for usage tracking (optional)
+        """
+        logger.info(f"Analyzing content: {version_id} (using {self.ai_provider}, engine: {preferred_engine or 'auto'})")
         
         # Use real AI for comprehensive analysis if available
         if self.use_real_ai:
             try:
-                # Use AI client's analyze_content method
-                ai_result = self.ai_client.analyze_content(content)
+                # Use AI client's analyze_content method with engine selection
+                ai_result = self.ai_client.analyze_content(
+                    content,
+                    preferred_engine=preferred_engine,
+                    user_id=user_id
+                )
                 
                 # Extract data from AI response
                 summary = ai_result.get('summary', '')

@@ -291,6 +291,21 @@ class DuckDBSchema:
             )
         """)
         
+        # AI Engine Usage Tracking Table - tracks API usage per engine per day
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS ai_engine_usage (
+                usage_id VARCHAR PRIMARY KEY,
+                user_id VARCHAR NOT NULL,
+                engine_name VARCHAR NOT NULL,
+                model_name VARCHAR NOT NULL,
+                request_date DATE NOT NULL,
+                request_count INTEGER DEFAULT 1,
+                last_request_at TIMESTAMP NOT NULL,
+                success_count INTEGER DEFAULT 0,
+                failure_count INTEGER DEFAULT 0
+            )
+        """)
+        
         # Create indexes for efficient querying
         self._create_indexes()
         
@@ -385,6 +400,12 @@ class DuckDBSchema:
         self.conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_youtube_rate_limit 
             ON youtube_rate_limits(user_id, request_timestamp)
+        """)
+        
+        # AI Engine Usage indexes
+        self.conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_ai_engine_usage_user_date 
+            ON ai_engine_usage(user_id, request_date, engine_name)
         """)
         
         # Feature usage history indexes
