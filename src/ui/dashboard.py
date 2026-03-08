@@ -704,6 +704,12 @@ class AshokaGovDashboard:
                     overflow-x: hidden !important;
                 }
                 
+                /* Header logo hover effect */
+                .app-header .cursor-pointer:hover {
+                    opacity: 0.8;
+                    transition: opacity 0.2s ease;
+                }
+                
                 .content-input-area {
                     background: rgba(45, 138, 132, 0.06) !important;
                     border: 1px solid rgba(45, 138, 132, 0.25) !important;
@@ -754,8 +760,10 @@ class AshokaGovDashboard:
         # Header
         with ui.header().classes('app-header'):
             with ui.row().classes('w-full items-center'):
-                ui.icon('shield_with_heart', size='lg').classes('text-white')
-                self.title_label = ui.label(self.t('title')).classes('text-2xl font-bold text-white ml-2')
+                # Clickable logo and title to scroll to top
+                with ui.row().classes('items-center cursor-pointer').on('click', lambda: ui.run_javascript('window.scrollTo({ top: 0, behavior: "smooth" })')):
+                    ui.icon('shield_with_heart', size='lg').classes('text-white')
+                    self.title_label = ui.label(self.t('title')).classes('text-2xl font-bold text-white ml-2')
                 self.subtitle_label = ui.label(self.t('subtitle')).classes('text-sm text-cyan-50 ml-4')
                 ui.space()
                 
@@ -792,11 +800,11 @@ class AshokaGovDashboard:
                                 current_dt = datetime.now(tz)
                                 date_str = current_dt.strftime('%d-%b-%Y')
                                 time_str = current_dt.strftime('%I:%M %p')
-                                self.datetime_label = ui.label(f'{date_str} {time_str} {timezone}').classes('timer-text font-mono text-sm font-bold')
+                                self.datetime_label = ui.label(f'{date_str} {time_str} {timezone}').classes('font-mono text-sm font-bold').style('color: #000000;')
                         
                         # Role badge only (no username)
                         role_color = 'red' if self.current_user_role == 'admin' else 'blue' if self.current_user_role == 'creator' else 'green'
-                        ui.badge(self.current_user_role.upper(), color=role_color).classes('text-sm font-semibold')
+                        ui.badge(self.current_user_role.upper(), color=role_color).classes('text-sm font-bold').style('color: #000000;')
 
             with ui.element('div').classes('dashboard-grid w-full'):
                 with ui.card().classes('dashboard-sidebar p-3 h-fit'):
@@ -1208,6 +1216,32 @@ class AshokaGovDashboard:
                             ui.label('Customize your experience').classes('text-cyan-50 text-sm')
 
                 with ui.column().classes('w-full p-6 gap-4 max-h-[500px] overflow-y-auto'):
+                    # AI Engine Information Card
+                    with ui.card().classes('w-full bg-gradient-to-r from-purple-50 to-blue-50'):
+                        with ui.row().classes('items-center gap-2 mb-3'):
+                            ui.icon('smart_toy', size='sm').classes('text-purple-600')
+                            ui.label('AI Engine Status').classes('text-base font-semibold')
+                        
+                        # Import AI client to get status
+                        from src.services.ai_engine import ai_client as multi_ai
+                        
+                        if multi_ai.is_available():
+                            engines = multi_ai.get_available_engines()
+                            rate_limits = multi_ai.get_rate_limits()
+                            
+                            with ui.column().classes('w-full gap-2'):
+                                ui.label(f'✓ Active Engines: {", ".join(engines)}').classes('text-sm text-green-700 font-medium')
+                                
+                                # Display rate limits
+                                ui.label('Rate Limits (Free Tier):').classes('text-xs font-semibold text-gray-700 mt-2')
+                                for engine_info, limit in rate_limits.items():
+                                    with ui.row().classes('items-center gap-2'):
+                                        ui.icon('circle', size='xs').classes('text-blue-500')
+                                        ui.label(f'{engine_info}: {limit}').classes('text-xs text-gray-600')
+                        else:
+                            ui.label('⚠ No AI engines available').classes('text-sm text-orange-600 font-medium')
+                            ui.label('Configure API keys in .env file').classes('text-xs text-gray-500')
+                    
                     # Language & Timezone Card
                     with ui.card().classes('w-full'):
                         ui.label('Language & Region').classes('text-base font-semibold mb-3')
@@ -1784,10 +1818,16 @@ class AshokaGovDashboard:
             all_services = [
                 {'name': 'Content Intelligence', 'icon': 'psychology', 'color': 'blue', 'tab': 'content_intelligence'},
                 {'name': 'Transformer', 'icon': 'transform', 'color': 'purple', 'tab': 'content_intelligence', 'scroll_to': 'transformer'},
-                {'name': 'Analysis', 'icon': 'analytics', 'color': 'indigo', 'tab': 'content_intelligence'},
-                {'name': 'Monitoring', 'icon': 'bar_chart', 'color': 'green', 'tab': 'monitoring'},
                 {'name': 'Alerts', 'icon': 'notifications', 'color': 'orange', 'tab': 'alerts'},
             ]
+            
+            # Add Monitoring for admin/creator users only (not for regular users)
+            if self.current_user_role in ['admin', 'creator']:
+                all_services.insert(2, {'name': 'Monitoring', 'icon': 'bar_chart', 'color': 'green', 'tab': 'monitoring'})
+            
+            # Add Multi-Platform Content Transformer for admin/creator users only
+            if self.current_user_role in ['admin', 'creator']:
+                all_services.insert(2, {'name': 'Multi-Platform Content Transformer', 'icon': 'auto_awesome', 'color': 'indigo', 'tab': 'content_intelligence', 'scroll_to': 'transformer'})
             
             # Add Security for admin users
             if self.current_user_role == 'admin':
@@ -1878,16 +1918,31 @@ class AshokaGovDashboard:
             with ui.tab_panels(input_tabs, value=text_tab).classes('w-full'):
                 # Text input panel
                 with ui.tab_panel(text_tab):
+                    # AI Model Information Card
+                    with ui.card().classes('w-full bg-blue-50 mb-4'):
+                        with ui.row().classes('items-start gap-3'):
+                            ui.icon('info', size='sm').classes('text-blue-600 mt-1')
+                            with ui.column().classes('flex-1 gap-1'):
+                                ui.label('AI Analysis Information').classes('text-sm font-semibold text-blue-900')
+                                ui.label('Powered by: Gemini AI (50 requests/day) with Sarvam AI backup').classes('text-xs text-blue-700')
+                                ui.label('Character Limit: 1,000 characters per analysis').classes('text-xs text-blue-700')
+                                ui.label('Analysis includes: Sentiment, Keywords, Topics, Quality Score, Takeaways').classes('text-xs text-blue-700')
+                    
+                    # Text input with character counter
                     self.content_input = ui.textarea(
                         label='Enter your content',
-                        placeholder='Paste your content here for AI-powered analysis...'
+                        placeholder='Paste your content here for AI-powered analysis...',
+                        on_change=lambda e: self._update_char_counter(e.value)
                     ).classes('w-full').props('rows=10')
+                    
+                    # Character counter
+                    self.char_counter = ui.label('0 / 1,000 characters').classes('text-xs text-gray-500 mt-1')
                     
                     with ui.row().classes('gap-2 mt-4'):
                         ui.button(
                             'Analyze Text',
                             icon='psychology',
-                            on_click=lambda: self._analyze_content(self.content_input.value)
+                            on_click=lambda: self._analyze_content_with_validation(self.content_input.value)
                         ).props('color=primary')
                         ui.button('Clear', icon='clear', on_click=self._clear_text_analysis).props('flat')
                     
@@ -3088,7 +3143,7 @@ class AshokaGovDashboard:
             
             # Introduction Section
             with ui.card().classes('w-full'):
-                ui.label('Ashoka is a comprehensive GenAI Governance and Observability Platform designed to empower everyone with responsible AI content management. By using this platform, you can track and analyze your content effortlessly, making it helpful for students, parents, working professionals, and content creators alike.').classes('text-base text-gray-700 leading-relaxed')
+                ui.label('Ashoka is a comprehensive GenAI Governance and Observability Platform designed to empower everyone with responsible AI content management. By using this platform, you can track and analyze your content effortlessly, making it helpful for students, parents, working professionals, content creators, and journalists alike.').classes('text-base text-gray-700 leading-relaxed')
             
             # Built For Everyone Section
             with ui.card().classes('w-full bg-gradient-to-br from-blue-50 to-cyan-50'):
@@ -3130,6 +3185,14 @@ class AshokaGovDashboard:
                             with ui.column().classes('gap-1 flex-1'):
                                 ui.label('Content Creators').classes('text-lg font-semibold text-orange-700')
                                 ui.label('Easily generate content with customizable tones (professional, casual, storytelling) and transform it for multiple platforms').classes('text-sm text-gray-600')
+                    
+                    # Journalists
+                    with ui.card().classes('w-full bg-white border-l-4 border-red-500'):
+                        with ui.row().classes('items-start gap-3'):
+                            ui.icon('article', size='lg').classes('text-red-600 mt-1')
+                            with ui.column().classes('gap-1 flex-1'):
+                                ui.label('Journalists').classes('text-lg font-semibold text-red-700')
+                                ui.label('Verify content authenticity, analyze sources, fact-check information, and adapt articles for different media channels with AI-powered insights').classes('text-sm text-gray-600')
             
             # What We Do Section
             with ui.card().classes('w-full'):
@@ -3755,6 +3818,39 @@ class AshokaGovDashboard:
         self.content_input.set_value('')
         self.text_analysis_container.clear()
         ui.notify('Text and analysis cleared', type='info')
+    
+    def _update_char_counter(self, text: str):
+        """Update character counter display"""
+        char_count = len(text) if text else 0
+        max_chars = 1000
+        
+        # Update counter text
+        self.char_counter.set_text(f'{char_count:,} / {max_chars:,} characters')
+        
+        # Change color based on usage
+        if char_count > max_chars:
+            self.char_counter.classes('text-xs text-red-600 font-semibold', remove='text-gray-500 text-orange-600')
+        elif char_count > max_chars * 0.9:
+            self.char_counter.classes('text-xs text-orange-600 font-semibold', remove='text-gray-500 text-red-600')
+        else:
+            self.char_counter.classes('text-xs text-gray-500', remove='text-orange-600 text-red-600 font-semibold')
+    
+    async def _analyze_content_with_validation(self, content: str):
+        """Validate content before analysis"""
+        if not content or not content.strip():
+            ui.notify('Please enter content to analyze', type='warning')
+            return
+        
+        # Check character limit
+        char_count = len(content)
+        max_chars = 1000
+        
+        if char_count > max_chars:
+            ui.notify(f'Content exceeds maximum limit of {max_chars:,} characters. Please reduce content length.', type='negative')
+            return
+        
+        # Proceed with analysis
+        await self._analyze_content(content)
     
     async def _analyze_content(self, content: str):
         """Analyze content and display results (async to prevent UI blocking)"""
@@ -4825,9 +4921,9 @@ class AshokaGovDashboard:
                 with ui.row().classes('items-center gap-2 mb-2'):
                     ui.icon('topic', size='sm').classes('text-orange-600')
                     ui.label('Topics').classes('font-semibold text-lg')
-                with ui.row().classes('gap-2'):
+                with ui.row().classes('gap-2 flex-wrap'):
                     for topic in analysis.topics:
-                        ui.chip(topic, icon='topic').props('outline color=orange')
+                        ui.badge(topic, color='orange').classes('px-3 py-1')
             
             # Takeaways Card
             if analysis.takeaways:
@@ -5078,9 +5174,9 @@ class AshokaGovDashboard:
                                 with ui.row().classes('items-center gap-2 mb-2'):
                                     ui.icon('topic', size='sm').classes('text-orange-600')
                                     ui.label('Topics').classes('font-semibold text-lg')
-                                with ui.row().classes('gap-2'):
+                                with ui.row().classes('gap-2 flex-wrap'):
                                     for topic in topics:
-                                        ui.chip(topic, icon='topic').props('outline color=orange')
+                                        ui.badge(topic, color='orange').classes('px-3 py-1')
                         
                         # Takeaways
                         if takeaways:
@@ -5275,9 +5371,6 @@ class AshokaGovDashboard:
                     ui.icon('error', size='xl').classes('text-red-600')
                     ui.label('Generation Failed').classes('text-xl font-semibold text-red-600 mt-2')
                     ui.label(str(e)).classes('text-sm text-gray-700 mt-2')
-                    
-                    if 'HUGGINGFACE_TOKEN' in str(e):
-                        ui.label('Make sure HUGGINGFACE_TOKEN is set in your .env file').classes('text-xs text-gray-600 mt-2')
             ui.notify(f'Generation failed: {str(e)}', type='negative')
     
     def _copy_to_clipboard(self, text: str):

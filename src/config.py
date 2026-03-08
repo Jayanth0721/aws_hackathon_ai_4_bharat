@@ -33,10 +33,6 @@ class Config:
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp")
     USE_GEMINI: bool = os.getenv("USE_GEMINI", "true").lower() == "true"
     
-    # Hugging Face Configuration (FREE!)
-    HUGGINGFACE_TOKEN: str = os.getenv("HUGGINGFACE_TOKEN", "")
-    HUGGINGFACE_MODEL: str = os.getenv("HUGGINGFACE_MODEL", "black-forest-labs/FLUX.1-schnell")
-    
     # Session Configuration
     SESSION_TIMEOUT_MINUTES: int = int(os.getenv("SESSION_TIMEOUT_MINUTES", "30"))
     OTP_EXPIRATION_MINUTES: int = int(os.getenv("OTP_EXPIRATION_MINUTES", "5"))

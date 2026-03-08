@@ -35,6 +35,7 @@ pytz==2024.1
 
 # AI/ML
 google-genai>=0.2.0
+# Sarvam AI uses REST API (no separate package needed)
 
 # Video processing (for YouTube only)
 moviepy==1.0.3

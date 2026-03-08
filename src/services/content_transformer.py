@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from src.utils.logging import logger
 from src.config import config
 
-# Import AI client
-from src.services.gemini_client import gemini_client
+# Import Multi-Engine AI client
+from src.services.ai_engine import ai_client
 
 
 @dataclass
@@ -32,17 +32,18 @@ class ContentTransformer:
     }
     
     def __init__(self):
-        # Use Gemini as the only AI provider
-        if config.USE_GEMINI and gemini_client.is_available():
-            self.ai_client = gemini_client
+        # Use Multi-Engine AI client
+        if ai_client.is_available():
+            self.ai_client = ai_client
             self.use_real_ai = True
-            self.ai_provider = 'Gemini'
-            logger.info("ContentTransformer initialized with Google Gemini")
+            engines = ai_client.get_available_engines()
+            self.ai_provider = f"Multi-Engine ({', '.join(engines)})"
+            logger.info(f"ContentTransformer initialized with {self.ai_provider}")
         else:
             self.ai_client = None
             self.use_real_ai = False
             self.ai_provider = 'Manual'
-            logger.warning("ContentTransformer initialized without AI - configure Gemini API key")
+            logger.warning("ContentTransformer initialized without AI - configure API keys")
         
         self.tone_styles = {
             'professional': {

@@ -8,25 +8,26 @@ from src.config import config
 from src.utils.logging import logger
 from src.utils.timestamp import utc_now
 
-# Import AI client
-from src.services.gemini_client import gemini_client
+# Import Multi-Engine AI client
+from src.services.ai_engine import ai_client
 
 
 class ContentAnalyzer:
     """Service for analyzing content using AI"""
     
     def __init__(self):
-        # Use Gemini as the only AI provider
-        if config.USE_GEMINI and gemini_client.is_available():
-            self.ai_client = gemini_client
+        # Use Multi-Engine AI client
+        if ai_client.is_available():
+            self.ai_client = ai_client
             self.use_real_ai = True
-            self.ai_provider = 'Gemini'
-            logger.info("ContentAnalyzer initialized with Google Gemini")
+            engines = ai_client.get_available_engines()
+            self.ai_provider = f"Multi-Engine ({', '.join(engines)})"
+            logger.info(f"ContentAnalyzer initialized with {self.ai_provider}")
         else:
             self.ai_client = None
             self.use_real_ai = False
             self.ai_provider = 'None'
-            logger.warning("ContentAnalyzer initialized without AI - configure Gemini API key")
+            logger.warning("ContentAnalyzer initialized without AI - configure API keys")
         
         self.db = db_schema
     
@@ -45,6 +46,9 @@ class ContentAnalyzer:
                 takeaways = ai_result.get('takeaways', [])
                 keywords = ai_result.get('keywords', [])
                 topics = ai_result.get('topics', [])
+                engine_used = ai_result.get('engine_used', 'unknown')
+                
+                logger.info(f"Analysis completed using engine: {engine_used}")
                 
                 # Extract sentiment
                 sentiment_data = ai_result.get('sentiment', {})

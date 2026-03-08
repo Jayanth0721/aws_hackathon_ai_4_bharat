@@ -4,9 +4,125 @@
 
 ---
 
-## Overview
+## Latest Updates (March 2026)
 
-This document summarizes recent fixes applied to the Ashoka platform, including WebSocket connection failures, Gemini API integration issues, and comprehensive UI/UX improvements for better user experience.
+### Update #1: Multi-Engine AI System Complete ✅
+
+**Changes:**
+- Implemented three-tier AI fallback system: Gemini → Sarvam AI → Gemini Engine 3
+- Added support for multiple Gemini API keys (100 free requests/day total)
+- Improved JSON parsing to handle `<think>` tags and reasoning tokens
+- Fixed sentiment structure to use proper dict format
+- Enhanced error logging for better debugging
+
+**Benefits:**
+- 100 free Gemini requests/day (50 + 50 from two keys)
+- Automatic fallback when one engine fails
+- Better reliability and uptime
+- Improved AI response parsing
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Update #2: Topics Display Fixed ✅
+
+**Changes:**
+- Changed topics from `ui.chip()` to `ui.badge()` 
+- Removed up/down arrow icons from topics
+- Made topics display consistent with keywords design
+- Added `flex-wrap` for better responsive layout
+
+**Benefits:**
+- Cleaner, more consistent UI
+- No confusing expand/collapse icons
+- Better visual harmony with keywords section
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Update #3: Recently Used Features Enhanced ✅
+
+**Changes:**
+- Replaced "Analysis" with "Multi-Platform Content Transformer" for admin/creator roles
+- Removed Monitoring from recently used for user role
+- Made feature cards clickable to navigate to specific features
+- Added role-based feature filtering
+
+**Benefits:**
+- More relevant features for each role
+- Better navigation experience
+- Cleaner UI for standard users
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Update #4: Clickable Header Logo ✅
+
+**Changes:**
+- Made Ashoka logo and title clickable in header
+- Smooth scroll to top when clicked
+- Added hover effect (opacity 0.8)
+- Cursor changes to pointer on hover
+
+**Benefits:**
+- Easy navigation back to top
+- Better UX for long pages
+- Standard web behavior
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Update #5: About Section - Journalists Added ✅
+
+**Changes:**
+- Added Journalists category to "Built For Everyone" section
+- Red color theme with article icon
+- Description: "Verify content authenticity, analyze sources, fact-check information, and adapt articles for different media channels with AI-powered insights"
+- Updated introduction text to include journalists
+
+**Benefits:**
+- Broader audience appeal
+- Clear use cases for journalism
+- Professional presentation
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Update #6: EC2 Instance Type Documentation ✅
+
+**Changes:**
+- Updated README.md to recommend m7i-flex.large instead of t2.micro
+- Documented t2.micro performance issues (99% CPU utilization, freezing)
+- Added cost comparison and performance monitoring screenshot
+- Updated all cost estimates
+
+**Benefits:**
+- Clear guidance for production deployment
+- Prevents performance issues
+- Realistic cost expectations
+
+**Status**: ✅ IMPLEMENTED
+
+---
+
+### Update #7: User Credentials Documentation ✅
+
+**Changes:**
+- Added guruji/guru1 credentials for user role in README.md
+- Now covers all 3 roles: admin, creator, user
+- Clear descriptions of access levels for each role
+
+**Benefits:**
+- Complete testing coverage
+- Easy role switching for demos
+- Better documentation
+
+**Status**: ✅ IMPLEMENTED
 
 ---
 

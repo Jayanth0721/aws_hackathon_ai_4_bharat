@@ -76,8 +76,9 @@ Open http://localhost:8080 in your browser.
 ## 🔐 Default Credentials
 
 - **Admin User**: `admin` / `admin123` (full access including Security tab)
+- **Creator User**: `creator` / `creator123` (content creation and transformation access)
+- **Standard User**: `guruji` / `guru1` (standard user access, view-only for monitoring)
 - **Demo User**: `demo` / `demo123` (standard user access)
-- **Creator Role**: Available during signup for content creation access
 
 ---
 
@@ -261,10 +262,11 @@ This project leverages the following AWS services:
 
 1. **Amazon EC2 (Elastic Compute Cloud)**
    - **Purpose**: Application hosting and deployment
-   - **Instance Type**: t2.micro or t2.small (Free Tier eligible)
+   - **Instance Type**: m7i-flex.large (Recommended for production)
+   - **Why not t2.micro?**: During initial setup, t2.micro instances experienced CPU utilization spikes up to 99%, causing the system to freeze. The m7i-flex.large instance provides better computational power and runs smoothly without performance issues.
    - **Configuration**: Ubuntu Server with Python 3.8+
    - **Access**: Public IP with port 8080 exposed
-   - **Cost**: Free Tier: 750 hours/month, After: ~$8-15/month
+   - **Cost**: m7i-flex.large: ~$0.087/hour (~$63/month), t2.micro Free Tier: 750 hours/month
 
 2. **Amazon DynamoDB** (Optional)
    - **Purpose**: Cloud-based NoSQL database for production
@@ -302,21 +304,21 @@ This project leverages the following AWS services:
 
 ### Cost Summary
 
-**Minimum Setup (Free Tier):**
-- EC2 t2.micro: Free (750 hours/month)
+**Development Setup (Free Tier - Not Recommended for Production):**
+- EC2 t2.micro: Free (750 hours/month) - **Warning**: May experience 99% CPU utilization and freezing during setup
 - DuckDB (local): Free
 - Cloudflare Workers: Free
-- **Total: $0/month** (within Free Tier limits)
+- **Total: $0/month** (within Free Tier limits, but performance issues expected)
 
-**Production Setup:**
-- EC2 t2.small: ~$15/month
+**Recommended Production Setup:**
+- EC2 m7i-flex.large: ~$63/month (better performance, no freezing)
 - DynamoDB: ~$10/month
 - Elastic IP: Free (when attached)
-- **Total: ~$25/month**
+- **Total: ~$73/month**
 
 **With AI API Costs:**
 - Google Gemini API: ~$5-15/month (based on usage)
-- **Grand Total: ~$30-40/month**
+- **Grand Total: ~$78-88/month** (m7i-flex.large + DynamoDB + Gemini API)
 
 For detailed cost breakdown, see [COST_OPTIMIZATION.md](COST_OPTIMIZATION.md).
 
@@ -575,6 +577,24 @@ For detailed troubleshooting, see [SETUP.md](SETUP.md) and [HOSTING.md](HOSTING.
 ---
 
 ## ☁️ AWS EC2 Deployment
+
+### Instance Type Recommendation
+
+**⚠️ Important: Use m7i-flex.large for Production**
+
+During testing, we found that t2.micro instances are insufficient for running Ashoka:
+- **CPU Utilization**: Reached 99% during setup and normal operation
+- **System Freezing**: Instance became unresponsive under load
+- **Performance Issues**: Slow response times and timeouts
+
+**Recommended Instance: m7i-flex.large**
+- **Better Performance**: Smooth operation without freezing
+- **Stable CPU Usage**: Maintains healthy utilization levels (see monitoring screenshot)
+- **Cost**: ~$63/month (~$0.087/hour)
+- **Worth It**: Reliable performance for production workloads
+
+![EC2 Performance Monitoring](image.png)
+*CPU utilization remains stable on m7i-flex.large instance*
 
 ### Quick Access Guide
 
