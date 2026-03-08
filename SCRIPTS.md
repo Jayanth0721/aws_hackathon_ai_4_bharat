@@ -67,10 +67,15 @@ Ashoka is an enterprise-grade GenAI governance platform that provides:
 
 **AI/ML Layer:**
 - Multi-Engine AI System:
-  - Google Gemini API (gemini-2.0-flash) - Primary engine
-  - Sarvam AI (sarvam-m) - Fallback for Indian languages
-  - Gemini Engine 3 - Additional fallback
-- Son of Ashoka API (Cloudflare Workers) - Image generation
+  - Google Gemini API (gemini-2.0-flash) - Primary engine (50 requests/day)
+  - Sarvam AI (sarvam-m) - Fallback for Indian languages (1000 requests/day)
+  - Gemini Engine 3 - Additional fallback (50 requests/day)
+- API Usage Tracking System:
+  - Real-time quota monitoring
+  - 24-hour reset cycle
+  - Automatic engine fallback
+  - Per-user tracking
+- Son of Ashoka API (Cloudflare Workers) - Image generation (FREE, unlimited)
 
 **Data Layer:**
 - DuckDB (local, file-based)
@@ -643,7 +648,95 @@ def _calculate_quality_score(analysis):
 
 ---
 
-### 3. Image Generator Service
+### 3. API Usage Tracker Service (NEW)
+
+**Location**: `src/services/api_usage_tracker.py`
+
+**Responsibilities:**
+- Track AI engine API requests per user per day
+- Monitor quota usage in real-time
+- Enforce daily limits
+- Provide usage statistics
+- Automatic 24-hour reset cycle
+
+**Key Methods:**
+```python
+class APIUsageTracker:
+    DAILY_LIMITS = {
+        'gemini': 50,      # Gemini Engine 1
+        'sarvam': 1000,    # Sarvam AI
+        'gemini3': 50,     # Gemini Engine 3
+    }
+    
+    def track_request(user_id, engine_name, model_name, success=True):
+        # Track an API request (success or failure)
+        # Updates or creates daily usage record
+        
+    def get_usage_today(user_id, engine_name):
+        # Get today's usage for specific engine
+        # Returns: used, limit, remaining, percentage
+        
+    def get_all_usage_today(user_id):
+        # Get usage for all engines
+        # Returns: dict mapping engine names to stats
+        
+    def can_use_engine(user_id, engine_name):
+        # Check if user has quota remaining
+        # Returns: Boolean
+        
+    def get_recommended_engine(user_id):
+        # Get engine with available quota
+        # Priority: gemini → sarvam → gemini3
+```
+
+**Database Schema:**
+```sql
+CREATE TABLE ai_engine_usage (
+    usage_id VARCHAR PRIMARY KEY,
+    user_id VARCHAR NOT NULL,
+    engine_name VARCHAR NOT NULL,
+    model_name VARCHAR NOT NULL,
+    request_date DATE NOT NULL,
+    request_count INTEGER DEFAULT 1,
+    last_request_at TIMESTAMP NOT NULL,
+    success_count INTEGER DEFAULT 0,
+    failure_count INTEGER DEFAULT 0
+)
+
+CREATE INDEX idx_ai_engine_usage_user_date 
+ON ai_engine_usage(user_id, request_date, engine_name)
+```
+
+**Usage Example:**
+```python
+from src.services.api_usage_tracker import api_usage_tracker
+
+# Check quota before request
+if api_usage_tracker.can_use_engine('user_guruji', 'gemini'):
+    # Make API request
+    result = ai_client.generate_content(prompt, user_id='user_guruji')
+    
+    # Track successful request
+    api_usage_tracker.track_request(
+        user_id='user_guruji',
+        engine_name='gemini',
+        model_name='gemini-2.0-flash',
+        success=True
+    )
+else:
+    print("Quota exceeded for Gemini")
+```
+
+**24-Hour Reset Logic:**
+- Tracking uses `request_date` field (DATE type)
+- Each day at midnight, new date begins
+- Previous day's data preserved in database
+- New day starts with 0 usage
+- Automatic reset, no cron jobs needed
+
+---
+
+### 4. Image Generator Service
 
 **Location**: `src/services/image_generator.py`
 

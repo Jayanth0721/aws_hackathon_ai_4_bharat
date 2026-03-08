@@ -49,6 +49,41 @@ Comprehensive guide to all features in the Ashoka GenAI Governance Platform.
 
 ## Content Intelligence & Analysis
 
+### AI Engine Usage & Selection (NEW)
+
+**Real-time API quota tracking** for all AI engines with 24-hour reset cycle.
+
+**Features:**
+- **3 Engine Cards**: Visual display of usage for each AI engine
+  - Engine 1: Gemini (50 requests/day)
+  - Engine 2: Sarvam AI (1000 requests/day)
+  - Engine 3: Gemini Backup (50 requests/day)
+- **Usage Display**: Shows "Used: X" and "Left: Y" for each engine
+- **Progress Bars**: Color-coded (green < 70%, orange < 90%, red ≥ 90%)
+- **Badge**: Shows "X/Y" format (used/total limit)
+- **Engine Selector**: Choose which engine to use or let system auto-select
+- **Refresh Button**: Manual refresh to update stats
+- **Auto-Refresh**: Stats update automatically after each AI request
+
+**How it works:**
+- Tracks every AI request (analysis, generation, transformation, image analysis)
+- Counts successful and failed requests
+- Resets automatically every 24 hours at midnight
+- Shows remaining quota in real-time
+- Prevents requests when quota exceeded
+
+**Engine Selection:**
+- 🤖 Auto (Recommended): System chooses best available engine
+- ⚡ Engine 1: Gemini: Manually select Gemini
+- 🌏 Engine 2: Sarvam AI: Manually select Sarvam AI
+- 🔄 Engine 3: Gemini Backup: Manually select backup Gemini
+
+**Quota Management:**
+- System automatically skips engines with exceeded quota
+- Falls back to next available engine
+- Shows clear error if all engines exhausted
+- Daily limits reset at midnight
+
 ### Text Analysis (Working)
 
 Analyze text content using Google Gemini AI.

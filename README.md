@@ -87,6 +87,13 @@ Open http://localhost:8080 in your browser.
 ### 1. 🧠 Content Intelligence & Analysis
 **AI-powered content analysis with comprehensive insights**
 
+- **AI Engine Usage Tracking**: Real-time quota monitoring for all AI engines
+  - Visual dashboard showing usage for 3 engines (Gemini, Sarvam AI, Gemini Backup)
+  - Daily limits: Gemini (50), Sarvam AI (1000), Gemini Backup (50)
+  - Auto-refresh after each request
+  - 24-hour reset cycle
+  - Manual engine selection or auto-selection
+  - Color-coded progress bars (green/orange/red)
 - **Multi-Format Support**: Text, Audio, Video, Images, Documents (PDF, DOCX)
 - **Sentiment Analysis**: Positive, Negative, Neutral with confidence scores
 - **Quality Scoring**: 0-100% quality metrics based on multiple factors

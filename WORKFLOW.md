@@ -139,7 +139,21 @@ Login → Set Restrictions → Monitor Security → Review User Activity → Man
    Click: Content Intelligence tab (sidebar)
    ```
 
-3. **Choose Input Method**
+3. **Check AI Engine Usage (NEW)**
+   ```
+   View real-time API quota:
+   - Engine 1: Gemini (X/50 used)
+   - Engine 2: Sarvam AI (X/1000 used)
+   - Engine 3: Gemini Backup (X/50 used)
+   
+   Select engine:
+   - Auto (Recommended): System chooses best available
+   - Manual: Select specific engine
+   
+   Note: Quotas reset every 24 hours at midnight
+   ```
+
+4. **Choose Input Method**
    
    **Option A: Text Input**
    ```
@@ -197,6 +211,8 @@ Login → Set Restrictions → Monitor Security → Review User Activity → Man
 **Expected Outcome**: Content quality validated, ready for next steps
 
 **Time Required**: 1-2 minutes per content piece
+
+**API Usage**: 1 request per analysis (tracked in real-time dashboard)
 
 ---
 
