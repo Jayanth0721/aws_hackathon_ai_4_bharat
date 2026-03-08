@@ -596,12 +596,9 @@ During testing, we found that t2.micro instances are insufficient for running As
 
 **Recommended Instance: m7i-flex.large**
 - **Better Performance**: Smooth operation without freezing
-- **Stable CPU Usage**: Maintains healthy utilization levels (see monitoring screenshot)
+- **Stable CPU Usage**: Maintains healthy utilization levels
 - **Cost**: ~$63/month (~$0.087/hour)
 - **Worth It**: Reliable performance for production workloads
-
-![EC2 Performance Monitoring](image.png)
-*CPU utilization remains stable on m7i-flex.large instance*
 
 ### Quick Access Guide
 
